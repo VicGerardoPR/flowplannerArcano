@@ -1,0 +1,992 @@
+Actúa como un equipo senior completo de producto, UX/UI, mobile development, backend, data engineering, QA, App Store Optimization, seguridad y estrategia de negocio digital.
+
+Quiero que construyas desde cero una aplicación premium de planificación diaria, semanal y mensual llamada:
+
+FLOWPLANNER
+
+La app será desarrollada por Arcano Intelligence, pero FlowPlanner debe tener su propia identidad independiente. No debe parecer una app de Arcano Intelligence ni usar su logo como marca principal. Arcano Intelligence solo debe aparecer como compañía desarrolladora en secciones como “Acerca de”, footer legal o metadata interna.
+
+La app debe sentirse como una aplicación de primer nivel para competir contra Todoist, TickTick, Structured, Motion, Things 3, Notion Calendar, Sunsama y apps modernas de productividad. El objetivo es crear una aplicación con potencial real para posicionarse entre las mejores apps de planificación en App Store y Google Play.
+
+No quiero una demo simple. Quiero una app funcional, moderna, escalable y lista para producción inicial. Todo debe estar conectado: frontend, backend, autenticación, perfil de usuario, tareas, calendario, hábitos, estadísticas, recompensas, historial, IA, sincronización, responsive design y estructura de archivos clara.
+
+NOMBRE DE LA APP:
+FlowPlanner
+
+DESARROLLADOR:
+Arcano Intelligence
+
+BRANDING:
+FlowPlanner debe tener branding propio.
+
+Identidad visual:
+- Minimalista.
+- Oscura.
+- Premium.
+- Moderna.
+- Fácil de usar.
+- Limpia.
+- Dinámica.
+- Elegante.
+- Enfocada en claridad mental, planificación y progreso.
+
+No usar el logo de Arcano Intelligence como logo principal.
+Crear un logo placeholder para FlowPlanner con una “F” moderna o símbolo abstracto de flujo/calendario/progreso.
+Preparar la ruta /assets/flowplanner-logo.png para reemplazar el logo luego.
+
+Estilo visual:
+- Dark mode por defecto.
+- Fondo negro profundo.
+- Tarjetas flotantes.
+- Gradientes suaves.
+- Acentos verdes, azules y violetas sutiles.
+- Glassmorphism ligero.
+- Bordes redondeados.
+- Animaciones suaves.
+- UI mobile-first.
+- Sensación de app premium, simple y rápida.
+
+Paleta sugerida:
+- Background: #050607
+- Surface: #0D1117
+- Surface elevated: #141A22
+- Primary: #00E6A8
+- Secondary: #4D8DFF
+- Accent violet: #9B5CFF
+- Success: #21D07A
+- Warning: #FFCC66
+- Danger: #FF5C7A
+- Text primary: #F5F7FA
+- Text secondary: #9CAAB8
+- Border: rgba(255,255,255,0.08)
+
+STACK RECOMENDADO:
+Crea la app usando:
+
+- React Native con Expo y TypeScript para iOS y Android.
+- Supabase como backend: Auth, Postgres, Row Level Security, Storage y Edge Functions.
+- Zustand o React Context para estado local.
+- TanStack Query para sincronización de datos.
+- React Hook Form + Zod para formularios y validación.
+- Expo Notifications para recordatorios.
+- Expo Calendar para integración opcional con calendarios del dispositivo.
+- Expo SecureStore para tokens/sesión.
+- Reanimated o Moti para microinteracciones.
+- Librería compatible para gráficas.
+- Arquitectura limpia, modular y escalable.
+
+Si el entorno no soporta React Native, crea una versión web PWA con Next.js, TypeScript, TailwindCSS, Supabase y Framer Motion, manteniendo la misma arquitectura de producto.
+
+OBJETIVO PRINCIPAL:
+Crear una app donde el usuario pueda planificar su día, semana y mes de manera extremadamente sencilla, sin sentirse abrumado. La app debe ayudar a capturar tareas rápido, organizarlas automáticamente, visualizar progreso, recibir reconocimiento al completar tareas y consultar historial de al menos 1 año hacia atrás y planificación de al menos 1 año hacia adelante.
+
+PÚBLICO OBJETIVO:
+- Personas ocupadas.
+- Estudiantes.
+- Emprendedores.
+- Profesionales.
+- Freelancers.
+- Dueños de negocio.
+- Personas con problemas de organización.
+- Personas que abandonan apps porque son complicadas.
+- Usuarios que quieren una app bonita, simple, rápida y poderosa.
+
+PRINCIPIOS DE PRODUCTO:
+1. La app debe ser simple antes que compleja.
+2. Crear una tarea debe tomar menos de 5 segundos.
+3. Todo debe poder hacerse en pocos taps.
+4. La pantalla de “Hoy” nunca debe sentirse saturada.
+5. La app debe acompañar, no castigar.
+6. El usuario debe sentirse reconocido por avanzar.
+7. La IA debe organizar, sugerir y simplificar.
+8. El diseño debe ser minimalista oscuro.
+9. La app debe funcionar primero en móvil.
+10. La arquitectura debe permitir escalar a miles de usuarios.
+11. El historial del usuario debe conservarse mínimo 1 año hacia atrás.
+12. El calendario debe permitir planificación mínimo 1 año hacia adelante.
+
+PANTALLAS PRINCIPALES:
+
+1. ONBOARDING
+
+Crear una experiencia de bienvenida elegante.
+
+Pantallas:
+- Bienvenida a FlowPlanner.
+- Frase principal: “Planifica tu día. Domina tu semana. Visualiza tu mes.”
+- Explicación: “FlowPlanner convierte tus tareas, hábitos y metas en un sistema simple para avanzar con claridad.”
+- Selección de objetivo principal:
+  - Organizar mi día
+  - Crear hábitos
+  - Manejar trabajo
+  - Manejar estudios
+  - Mejorar disciplina
+  - Reducir estrés
+  - Planificar proyectos
+  - Planificación general
+- Selección de estilo de planificación:
+  - Simple
+  - Por horarios
+  - Por proyectos
+  - Con hábitos
+  - Con IA
+- Configurar hora de inicio del día.
+- Configurar hora de cierre del día.
+- Activar notificaciones opcionalmente.
+- Crear perfil inicial.
+
+2. AUTENTICACIÓN
+
+Crear:
+- Registro con email/password.
+- Login.
+- Recuperar contraseña.
+- Login social preparado para Apple y Google.
+- Opción de eliminar cuenta desde Settings.
+- Usar Supabase Auth.
+- Activar Row Level Security.
+- Cada usuario solo puede ver sus propios datos.
+
+3. PERFIL DEL USUARIO
+
+Cada usuario debe tener:
+- Nombre.
+- Foto/avatar.
+- Email.
+- Zona horaria.
+- Idioma.
+- Estilo de planificación.
+- Hora de inicio del día.
+- Hora de cierre del día.
+- Días activos.
+- Meta diaria de tareas.
+- Tema visual.
+- XP acumulado.
+- Nivel.
+- Badges/logros.
+- Streak flexible.
+- Preferencias de notificación.
+- Fecha de creación.
+- Última actividad.
+
+4. DASHBOARD / HOME
+
+Pantalla principal con:
+- Saludo dinámico.
+- Fecha actual.
+- Progreso del día en porcentaje.
+- Anillo de progreso.
+- Tareas completadas vs pendientes.
+- Próxima tarea importante.
+- Botón grande “+ Captura rápida”.
+- Sección “Hoy”.
+- Sección “Enfoque recomendado”.
+- Sección de reconocimiento.
+- Mini resumen semanal.
+- Mensaje motivacional personalizado.
+- Acceso rápido a calendario, hábitos y estadísticas.
+
+5. PLANIFICACIÓN DIARIA
+
+Debe incluir:
+- Lista de tareas de hoy.
+- Modo timeline por horas.
+- Modo tarjetas.
+- Modo checklist minimalista.
+- Drag and drop.
+- Crear tarea rápida.
+- Marcar como completada.
+- Posponer.
+- Eliminar.
+- Duplicar.
+- Convertir en hábito.
+- Añadir duración estimada.
+- Añadir prioridad.
+- Añadir proyecto.
+- Añadir etiqueta.
+- Añadir notas.
+- Añadir URL tocable.
+- Añadir archivo/foto si se implementa Storage.
+- Añadir subtareas.
+- Añadir recordatorio.
+- Añadir recurrencia.
+- Añadir nivel de energía:
+  - Baja
+  - Media
+  - Alta
+- Añadir tipo de tarea:
+  - Personal
+  - Trabajo
+  - Estudio
+  - Salud
+  - Finanzas
+  - Familia
+  - Proyecto
+  - Otro
+
+6. SISTEMA “HOY LIMPIO”
+
+Implementar una lógica especial para evitar saturación.
+
+Reglas:
+- La vista “Hoy” debe mantenerse clara.
+- Las tareas vencidas no deben acumularse encima del usuario.
+- Las tareas no completadas deben pasar a una pantalla llamada “Revisión de pendientes”.
+- El usuario decide qué hacer con cada tarea:
+  - Reprogramar
+  - Completar
+  - Archivar
+  - Mover a proyecto
+  - Posponer
+  - Eliminar
+- No mostrar decenas de tareas vencidas en la pantalla principal.
+- La app debe reducir ansiedad, no aumentarla.
+
+7. PLANIFICACIÓN SEMANAL
+
+Vista semanal con:
+- Tarjetas por día.
+- Total de tareas por día.
+- Horas estimadas.
+- Balance de energía.
+- Objetivos semanales.
+- Tareas importantes.
+- Drag and drop entre días.
+- Resumen de carga semanal.
+- Revisión semanal.
+- Botón “Planificar semana con IA”.
+
+Sugerencias de IA:
+- “Tu miércoles está muy cargado.”
+- “Puedes mover esta tarea al viernes.”
+- “Tienes muchas tareas de alta energía el mismo día.”
+- “Tu semana está balanceada.”
+- “Te conviene reservar un bloque de enfoque.”
+
+8. PLANIFICACIÓN MENSUAL
+
+Vista mensual con:
+- Calendario mensual.
+- Eventos y tareas por día.
+- Heatmap de productividad.
+- Objetivos del mes.
+- Fechas importantes.
+- Hábitos del mes.
+- Resumen de consistencia.
+- Progreso mensual.
+- Navegación mínimo 12 meses hacia atrás.
+- Navegación mínimo 12 meses hacia adelante.
+- Crear tareas futuras.
+- Revisar meses anteriores sin perder datos.
+
+9. CALENDARIO
+
+Crear calendario integrado con:
+- Vista diaria.
+- Vista semanal.
+- Vista mensual.
+- Swipe entre días.
+- Tareas con duración.
+- Eventos.
+- Bloques de enfoque.
+- Colores por categoría.
+- Integración opcional con calendario del dispositivo.
+- Tareas recurrentes.
+- Recordatorios.
+- Eventos de todo el día.
+- Time blocking.
+
+10. PROYECTOS
+
+Cada usuario puede crear proyectos con:
+- Nombre.
+- Color.
+- Icono.
+- Descripción.
+- Estado:
+  - Activo
+  - Pausado
+  - Completado
+  - Archivado
+- Tareas asociadas.
+- Progreso.
+- Fecha objetivo.
+- Prioridad.
+- Notas.
+- Archivos opcionales.
+
+11. HÁBITOS
+
+Crear sistema de hábitos:
+- Hábitos diarios.
+- Hábitos semanales.
+- Hábitos mensuales.
+- Frecuencia flexible.
+- Ejemplo: 3 veces por semana, 8 veces al mes, lunes-miércoles-viernes.
+- Días de descanso.
+- Grace days.
+- Streak flexible.
+- Calendario de consistencia.
+- Progreso por hábito.
+- Recordatorios.
+- Convertir tarea en hábito.
+- No castigar al usuario por fallar un día.
+
+12. RECONOCIMIENTO / RECOMPENSAS
+
+Crear sección llamada “Reconocimiento”.
+
+Debe aparecer cuando el usuario complete tareas, hábitos o metas.
+
+Incluir:
+- XP por tarea completada.
+- Bonos por tareas importantes.
+- Bonos por completar el día.
+- Badges.
+- Niveles.
+- Animaciones suaves.
+- Mensajes motivacionales personalizados.
+- Historial de logros.
+- Recap diario.
+- Recap semanal.
+
+Badges iniciales:
+- Primera tarea completada.
+- 5 tareas completadas.
+- Semana organizada.
+- Mes consistente.
+- Enfoque profundo.
+- Maestro de hábitos.
+- Planificador estratégico.
+- Flujo perfecto.
+
+Niveles:
+- Nivel 1: Inicio
+- Nivel 2: Organizador
+- Nivel 3: Enfoque
+- Nivel 4: Estratega
+- Nivel 5: Arquitecto
+- Nivel 6: Maestro Flow
+
+La gamificación debe sentirse premium y profesional, no infantil.
+
+13. IA INTEGRADA
+
+Crear un asistente llamado:
+
+Flow AI
+
+Funciones:
+- Convertir texto natural en tareas.
+- Organizar tareas sin fecha.
+- Sugerir prioridades.
+- Dividir tareas grandes en subtareas.
+- Crear plan diario.
+- Crear plan semanal.
+- Crear plan mensual.
+- Detectar sobrecarga.
+- Sugerir descansos.
+- Sugerir qué mover si el día está lleno.
+- Crear resumen diario.
+- Crear resumen semanal.
+- Crear mensaje motivacional.
+- Limpiar tareas antiguas.
+- Responder preguntas como:
+  - “¿Qué tengo pendiente hoy?”
+  - “Organízame mañana.”
+  - “¿Qué tareas son importantes esta semana?”
+  - “Crea un plan para mi lunes.”
+  - “Muéstrame mis hábitos más consistentes.”
+  - “Qué debo mover para no sobrecargarme?”
+
+La IA debe sugerir, no imponer.
+Toda sugerencia debe tener botones:
+- Aplicar
+- Editar
+- Ignorar
+
+14. CAPTURA RÁPIDA
+
+Crear un modal global:
+- Campo grande de texto.
+- Botón de voz preparado.
+- Botón guardar.
+- IA detecta fecha, hora y prioridad.
+- Guardar como:
+  - Tarea
+  - Evento
+  - Hábito
+  - Nota
+
+Ejemplos:
+- “Mañana a las 3 llamar al cliente.”
+- “Todos los lunes hacer ejercicio.”
+- “El viernes enviar propuesta.”
+- “Recordarme pagar la luz el día 15.”
+
+15. NOTAS DIARIAS
+
+Cada día debe tener:
+- Intención del día.
+- Notas libres.
+- Reflexión del cierre.
+- Estado de ánimo.
+- Nivel de energía.
+- Foto opcional.
+- Links opcionales.
+- Historial guardado por fecha.
+
+16. ESTADÍSTICAS
+
+Crear dashboard de insights:
+- Tareas completadas por día.
+- Tareas completadas por semana.
+- Tareas completadas por mes.
+- Tasa de cumplimiento.
+- Mejor día de la semana.
+- Categoría más activa.
+- Hábitos más consistentes.
+- Streak flexible.
+- Progreso de objetivos.
+- Heatmap mensual.
+- Comparación semana actual vs anterior.
+- Comparación mes actual vs anterior.
+- Insights generados por IA.
+
+17. OBJETIVOS
+
+Crear sección de objetivos:
+- Objetivos diarios.
+- Objetivos semanales.
+- Objetivos mensuales.
+- Objetivos anuales.
+- Asociar tareas a objetivos.
+- Progreso automático.
+- Check-ins.
+- Estado:
+  - En progreso
+  - En pausa
+  - Completado
+  - Cancelado
+- Roadmap simple por objetivo.
+
+18. BÚSQUEDA GLOBAL
+
+Crear búsqueda global:
+- Buscar tareas.
+- Buscar notas.
+- Buscar proyectos.
+- Buscar hábitos.
+- Buscar fechas.
+- Filtros por:
+  - Categoría
+  - Estado
+  - Prioridad
+  - Proyecto
+  - Rango de fecha
+
+19. HISTORIAL Y FUTURO
+
+Requisito obligatorio:
+- Cada usuario debe conservar mínimo 12 meses de historial hacia atrás.
+- Cada usuario debe poder planificar mínimo 12 meses hacia adelante.
+- No borrar datos automáticamente.
+- Archivar en vez de eliminar.
+- Crear filtros por rango de fecha.
+- Base de datos optimizada por user_id y fecha.
+- No cargar todo el historial de una vez.
+
+20. SETTINGS
+
+Crear configuración:
+- Perfil.
+- Tema.
+- Notificaciones.
+- Hora de inicio del día.
+- Hora de cierre del día.
+- Idioma.
+- Exportar datos.
+- Importar datos.
+- Eliminar cuenta.
+- Privacidad.
+- Soporte.
+- Acerca de FlowPlanner.
+- Desarrollado por Arcano Intelligence.
+- Versión de app.
+
+21. PRIVACIDAD Y CUMPLIMIENTO
+
+Implementar:
+- Row Level Security en Supabase.
+- Cada tabla debe tener user_id.
+- Políticas RLS por usuario.
+- Opción de eliminar cuenta.
+- Opción de exportar datos.
+- Opción de borrar datos personales.
+- Preparar App Store Privacy Nutrition Label.
+- Preparar Google Play Data Safety.
+- No vender datos.
+- No tracking innecesario.
+- Minimizar permisos.
+- Pedir permisos solo cuando tenga sentido.
+
+22. MONETIZACIÓN PREPARADA
+
+Crear estructura para:
+
+Plan Free:
+- Tareas básicas ilimitadas.
+- Vista diaria.
+- Vista semanal básica.
+- Hábitos limitados.
+- Reconocimiento básico.
+
+Plan Pro:
+- Historial completo 1 año+.
+- IA avanzada.
+- Calendario mensual completo.
+- Estadísticas avanzadas.
+- Temas premium.
+- Recompensas avanzadas.
+- Integraciones.
+- Exportación de datos.
+- Widgets premium.
+
+Plan Lifetime:
+- Pago único.
+- Todas las funciones Pro.
+- Badge especial “Founding Planner”.
+
+No implementar pagos reales si el entorno no lo permite, pero dejar arquitectura preparada para RevenueCat.
+
+23. ASO / APP STORE OPTIMIZATION
+
+Preparar metadata:
+
+Nombre:
+FlowPlanner
+
+Subtítulo:
+Daily, Weekly & Monthly Planner
+
+Descripción corta:
+Planifica tu día, organiza tu semana y alcanza tus metas con tareas, hábitos, calendario, IA y reconocimiento inteligente.
+
+Descripción larga:
+FlowPlanner es una app de planificación minimalista diseñada para ayudarte a organizar tu día, semana y mes sin complicaciones. Captura tareas rápido, crea hábitos flexibles, visualiza tu calendario, recibe sugerencias inteligentes y celebra tu progreso con un sistema elegante de reconocimiento.
+
+Keywords:
+planner, daily planner, weekly planner, monthly planner, habits, tasks, todo, calendar, productivity, AI planner, goals, schedule, focus, reminders, time blocking
+
+Categoría:
+Productivity
+
+Propuesta única:
+Una app de planificación minimalista oscura con IA, calendario, hábitos flexibles, reconocimiento elegante y una vista de “Hoy” limpia que evita la saturación.
+
+24. UI/UX ESPECÍFICA
+
+Usar:
+- Dark mode por defecto.
+- Tarjetas flotantes.
+- Bordes sutiles.
+- Sombras suaves.
+- Glassmorphism ligero.
+- Gradientes sutiles.
+- Tipografía moderna.
+- Animaciones suaves.
+- Botones grandes.
+- Estados vacíos bonitos.
+- Microcopy humano.
+- Iconos limpios.
+
+Bottom navigation:
+- Hoy
+- Semana
+- Mes
+- IA
+- Perfil
+
+FAB:
+- Botón flotante para captura rápida.
+
+Interacciones:
+- Swipe para completar.
+- Swipe para posponer.
+- Tap largo para editar.
+- Drag and drop para ordenar.
+
+25. ESTADOS VACÍOS
+
+Crear estados vacíos:
+- “Tu día está limpio. Añade tu primera tarea.”
+- “No hay tareas para esta semana. ¿Quieres que Flow AI te ayude a planificar?”
+- “Aún no tienes hábitos. Crea uno pequeño para empezar.”
+- “No tienes logros todavía. Completa una tarea para activar tu primer reconocimiento.”
+- “Tu calendario está libre. Buen momento para planificar con calma.”
+
+26. BASE DE DATOS
+
+Crear esquema Supabase con tablas:
+
+profiles:
+- id uuid primary key references auth.users
+- full_name text
+- avatar_url text
+- timezone text
+- language text
+- planning_style text
+- day_start_time time
+- day_end_time time
+- daily_task_goal int
+- theme text
+- xp int default 0
+- level int default 1
+- created_at timestamptz
+- updated_at timestamptz
+
+tasks:
+- id uuid primary key
+- user_id uuid references auth.users
+- title text not null
+- description text
+- status text
+- priority text
+- category text
+- project_id uuid nullable
+- due_date date
+- due_time time nullable
+- duration_minutes int nullable
+- energy_level text
+- is_recurring boolean default false
+- recurrence_rule text nullable
+- reminder_at timestamptz nullable
+- completed_at timestamptz nullable
+- created_at timestamptz
+- updated_at timestamptz
+
+subtasks:
+- id uuid primary key
+- task_id uuid references tasks
+- user_id uuid references auth.users
+- title text
+- completed boolean default false
+- created_at timestamptz
+
+projects:
+- id uuid primary key
+- user_id uuid references auth.users
+- name text
+- description text
+- color text
+- icon text
+- status text
+- target_date date nullable
+- created_at timestamptz
+- updated_at timestamptz
+
+habits:
+- id uuid primary key
+- user_id uuid references auth.users
+- title text
+- description text
+- frequency_type text
+- target_count int
+- period text
+- active_days text[]
+- reminder_time time nullable
+- color text
+- icon text
+- is_active boolean default true
+- created_at timestamptz
+- updated_at timestamptz
+
+habit_logs:
+- id uuid primary key
+- user_id uuid references auth.users
+- habit_id uuid references habits
+- log_date date
+- count int default 1
+- completed boolean default true
+- created_at timestamptz
+
+daily_notes:
+- id uuid primary key
+- user_id uuid references auth.users
+- note_date date
+- intention text
+- reflection text
+- free_notes text
+- mood text
+- energy_score int
+- created_at timestamptz
+- updated_at timestamptz
+
+achievements:
+- id uuid primary key
+- code text unique
+- title text
+- description text
+- icon text
+- xp_reward int
+- created_at timestamptz
+
+user_achievements:
+- id uuid primary key
+- user_id uuid references auth.users
+- achievement_id uuid references achievements
+- unlocked_at timestamptz
+
+xp_events:
+- id uuid primary key
+- user_id uuid references auth.users
+- source_type text
+- source_id uuid nullable
+- points int
+- reason text
+- created_at timestamptz
+
+goals:
+- id uuid primary key
+- user_id uuid references auth.users
+- title text
+- description text
+- goal_type text
+- status text
+- target_date date nullable
+- progress int default 0
+- created_at timestamptz
+- updated_at timestamptz
+
+ai_suggestions:
+- id uuid primary key
+- user_id uuid references auth.users
+- suggestion_type text
+- content jsonb
+- status text
+- created_at timestamptz
+- updated_at timestamptz
+
+Crear índices:
+- tasks(user_id, due_date)
+- tasks(user_id, status)
+- habits(user_id)
+- habit_logs(user_id, log_date)
+- daily_notes(user_id, note_date)
+- goals(user_id, goal_type)
+- xp_events(user_id, created_at)
+
+Activar RLS en todas las tablas.
+Crear policies SELECT, INSERT, UPDATE y DELETE para que user_id = auth.uid().
+
+27. LÓGICA DE XP
+
+Reglas:
+- Completar tarea simple: +10 XP.
+- Completar tarea de prioridad alta: +20 XP.
+- Completar todas las tareas del día: +50 XP.
+- Completar hábito: +10 XP.
+- Completar semana con 70% o más: +100 XP.
+- Crear planificación semanal: +25 XP.
+- Hacer revisión semanal: +40 XP.
+- Evitar XP infinito por repetir la misma acción.
+- Registrar todo en xp_events.
+- Subir nivel cada 500 XP.
+- Mostrar animación al subir nivel.
+
+28. BADGES INICIALES
+
+Crear:
+- FIRST_TASK_COMPLETED
+- FIVE_TASKS_COMPLETED
+- FIRST_WEEK_PLANNED
+- SEVEN_DAY_CONSISTENCY
+- MONTHLY_REVIEW_DONE
+- FIRST_HABIT_CREATED
+- FOCUS_MASTER
+- FLOW_STRATEGIST
+- PERFECT_FLOW_DAY
+
+29. PERFORMANCE
+
+Optimizar:
+- Lazy loading por fecha.
+- Query por rangos.
+- Cache local.
+- Skeleton loaders.
+- Optimistic updates.
+- Offline-first básico.
+- Sincronización al recuperar internet.
+- No cargar todo el historial de una vez.
+
+30. ACCESIBILIDAD
+
+Incluir:
+- Contraste alto.
+- Botones cómodos.
+- Labels accesibles.
+- Soporte para lectores de pantalla.
+- No depender solo del color.
+- Opción para reducir movimiento.
+
+31. TESTING
+
+Crear:
+- Unit tests para lógica de XP.
+- Unit tests para completar tareas.
+- Unit tests para hábitos flexibles.
+- Unit tests para mover tareas vencidas a revisión.
+- Tests básicos de seguridad/RLS.
+- Checklist QA manual.
+
+32. DATOS DEMO
+
+Crear seed:
+- Usuario demo.
+- 10 tareas.
+- 3 proyectos.
+- 4 hábitos.
+- 2 objetivos.
+- 5 logros.
+- 14 días de historial.
+- Próximas 2 semanas planificadas.
+
+33. ENTREGABLES
+
+Entrega:
+- Estructura completa de carpetas.
+- Código completo.
+- SQL completo para Supabase.
+- Variables de entorno.
+- Instrucciones de instalación.
+- Instrucciones para correr local.
+- Instrucciones para publicar con Expo.
+- Instrucciones para configurar Supabase.
+- Instrucciones para activar notificaciones.
+- README profesional.
+- Checklist para App Store.
+- Checklist para Google Play.
+- Roadmap de próximas versiones.
+
+34. ESTRUCTURA SUGERIDA
+
+Usa:
+
+/app
+  /(auth)
+  /(tabs)
+  /onboarding
+/components
+  /ui
+  /planner
+  /calendar
+  /achievements
+  /ai
+/lib
+  /supabase
+  /dates
+  /xp
+  /notifications
+  /ai
+/store
+/hooks
+/types
+/assets
+/supabase
+  schema.sql
+  seed.sql
+  policies.sql
+
+35. CALIDAD DE CÓDIGO
+
+Reglas:
+- TypeScript estricto.
+- Componentes reutilizables.
+- No archivos gigantes.
+- Separar lógica de UI.
+- Manejo de errores.
+- Loading states.
+- Empty states.
+- Código limpio.
+- Arquitectura escalable.
+- Theme centralizado.
+- Variables de entorno claras.
+- Comentarios solo donde sean necesarios.
+
+36. FUNCIONALIDAD MÍNIMA OBLIGATORIA
+
+La app debe permitir:
+- Registrarse.
+- Iniciar sesión.
+- Crear perfil.
+- Crear tarea.
+- Ver tareas de hoy.
+- Completar tarea.
+- Recibir XP.
+- Ver reconocimiento/logro.
+- Crear hábito.
+- Registrar hábito.
+- Ver calendario semanal.
+- Ver calendario mensual.
+- Crear proyecto.
+- Asociar tarea a proyecto.
+- Crear nota diaria.
+- Ver estadísticas básicas.
+- Navegar 1 año hacia atrás.
+- Navegar 1 año hacia adelante.
+- Eliminar cuenta.
+- Proteger datos por usuario.
+
+37. COPYWRITING DE MARCA
+
+Usar frases como:
+- “Planifica con claridad.”
+- “Tu día, en flujo.”
+- “Menos ruido. Más avance.”
+- “Convierte intención en progreso.”
+- “Flow AI encontró una mejor forma de organizar tu día.”
+- “Excelente. Acabas de cerrar una tarea importante.”
+- “Tu semana está tomando forma.”
+- “No se trata de hacerlo todo. Se trata de avanzar mejor.”
+- “Organiza hoy. Avanza mañana.”
+- “Planificación simple para una vida más clara.”
+
+38. IA Y ÉTICA
+
+La IA debe:
+- Sugerir, no imponer.
+- No avergonzar al usuario.
+- No castigar fallos.
+- No usar lenguaje agresivo.
+- Promover descanso y balance.
+- Explicar por qué sugiere cambios.
+- Pedir confirmación antes de mover muchas tareas.
+- Respetar privacidad.
+- No hacer cambios importantes sin aprobación.
+
+39. ACERCA DE LA APP
+
+En la pantalla “Acerca de” incluir:
+
+FlowPlanner
+Una app de planificación diaria, semanal y mensual diseñada para ayudarte a organizar tu vida con claridad, hábitos flexibles, calendario inteligente y reconocimiento por tu progreso.
+
+Desarrollado por Arcano Intelligence.
+
+No colocar Arcano Intelligence como marca principal de la app. FlowPlanner es el producto principal.
+
+40. RESULTADO FINAL ESPERADO
+
+Construye la primera versión funcional completa de FlowPlanner. Debe sentirse como una app premium real, minimalista oscura, rápida, fácil de usar, con IA integrada, planificación diaria, semanal y mensual, perfiles de usuario, recompensas, historial, futuro, seguridad y arquitectura lista para escalar.
+
+Empieza generando:
+
+1. Arquitectura completa.
+2. Esquema SQL de Supabase.
+3. Estructura de carpetas.
+4. Código base funcional.
+5. Pantallas principales.
+6. Lógica de tareas, hábitos, XP y reconocimiento.
+7. README con pasos para correr la app.
+
+No dejes partes críticas como pseudocódigo. Si algo requiere API key o servicio externo, crea placeholders claros en .env.example y explica cómo configurarlo.

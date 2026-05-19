@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050607;
+  --color-surface: #0D1117;
+  --color-surface-elevated: #141A22;
+  --color-primary: #00E6A8;
+  --color-secondary: #4D8DFF;
+  --color-accent-violet: #9B5CFF;
+  --color-success: #21D07A;
+  --color-warning: #FFCC66;
+  --color-danger: #FF5C7A;
+  --color-text-primary: #F5F7FA;
+  --color-text-secondary: #9CAAB8;
+  --color-border-custom: rgba(255, 255, 255, 0.08);
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --background: #050607;
+  --foreground: #F5F7FA;
+}
+
+body {
+  background-color: #050607;
+  color: #F5F7FA;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050607;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(13, 17, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-elevated {
+  background: rgba(20, 26, 34, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Pulse / Flow animation */
+@keyframes flow-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.flow-glow {
+  filter: blur(40px);
+  opacity: 0.15;
+  animation: flow-pulse 8s ease-in-out infinite;
+}
+
+/* Custom Checkbox Animation */
+@keyframes strike-through {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.strike-animation {
+  animation: strike-through 0.2s ease-out forwards;
+}

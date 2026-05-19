@@ -1,0 +1,342 @@
+// MonthView - FlowPlanner Monthly Grid & Heatmap
+// Developed by Arcano Intelligence
+
+'use client';
+
+import React, { useState } from 'react';
+import { useFlowStore } from '../../store/flowStore';
+import { 
+  Calendar, CheckCircle, ChevronLeft, ChevronRight, Target, 
+  Flame, Award, Plus, Trash2, ArrowUpRight, TrendingUp
+} from 'lucide-react';
+
+export default function MonthView() {
+  const tasks = useFlowStore((state) => state.tasks);
+  const habits = useFlowStore((state) => state.habits);
+  const habitLogs = useFlowStore((state) => state.habitLogs);
+  const goals = useFlowStore((state) => state.goals);
+  const updateGoal = useFlowStore((state) => state.updateGoal);
+  const addGoal = useFlowStore((state) => state.addGoal);
+  const triggerNotification = useFlowStore((state) => state.triggerNotification);
+
+  // Month navigation (0 = May 2026)
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  // New Goal Input
+  const [newGoalTitle, setNewGoalTitle] = useState('');
+  const [showGoalForm, setShowGoalForm] = useState(false);
+
+  // May 2026 Anchor
+  const baseYear = 2026;
+  const baseMonth = 4; // May (0-indexed: January is 0, May is 4)
+
+  const getTargetMonthYear = () => {
+    const d = new Date(baseYear, baseMonth + monthOffset, 1);
+    return {
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      name: d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+    };
+  };
+
+  const { year, month, name: monthYearLabel } = getTargetMonthYear();
+
+  // Create Days for Grid (May 2026 starts on Friday)
+  // Let's generate a full calendar matrix
+  const firstDayIndex = new Date(year, month, 1).getDay(); // Sun = 0, Mon = 1, etc.
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const calendarDays: any[] = [];
+  
+  // Empty spaces for previous month's padding
+  const paddingDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Align Mon as first day
+  for (let i = 0; i < paddingDays; i++) {
+    calendarDays.push({ padding: true });
+  }
+
+  // Populate actual month days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dayDate = new Date(year, month, i);
+    const dateStr = dayDate.toISOString().split('T')[0];
+    
+    const dayTasks = tasks.filter(t => t.due_date === dateStr && t.status !== 'archived');
+    const dayCompleted = dayTasks.filter(t => t.status === 'completed');
+    const dayHabitsCompleted = habitLogs.filter(l => l.log_date === dateStr && l.completed);
+
+    calendarDays.push({
+      padding: false,
+      dayNumber: i,
+      dateStr,
+      tasks: dayTasks,
+      completedTasks: dayCompleted,
+      habitsCount: dayHabitsCompleted.length
+    });
+  }
+
+  const handleProgressGoal = (id: string, currentProgress: number) => {
+    const nextProgress = Math.min(100, currentProgress + 10);
+    updateGoal(id, { progress: nextProgress });
+    triggerNotification(
+      'META ACTUALIZADA',
+      `Progreso aumentado al ${nextProgress}%`,
+      'success'
+    );
+  };
+
+  const handleCreateGoalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGoalTitle.trim()) return;
+
+    addGoal(newGoalTitle.trim(), 'Meta mensual creada.', 'monthly', '2026-05-30');
+    setNewGoalTitle('');
+    setShowGoalForm(false);
+
+    triggerNotification(
+      'META FIJADA',
+      `Has fijado un nuevo objetivo mensual`,
+      'success'
+    );
+  };
+
+  // Github-like Heatmap grid calculation for the last 14 days of May
+  // Using relative date logic
+  const getRelativeDateStr = (offsetDays: number): string => {
+    const d = new Date('2026-05-18');
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().split('T')[0];
+  };
+
+  const heatmapDays = Array.from({ length: 28 }, (_, i) => {
+    const offset = i - 21; // Past 21 days up to 6 days in future
+    const dateStr = getRelativeDateStr(offset);
+    const completedTasks = tasks.filter(t => t.due_date === dateStr && t.status === 'completed').length;
+    const completedHabits = habitLogs.filter(l => l.log_date === dateStr).length;
+    const totalActivity = completedTasks + completedHabits;
+
+    let intensityClass = 'bg-white/5';
+    if (totalActivity > 0 && totalActivity <= 2) intensityClass = 'bg-primary/20';
+    else if (totalActivity > 2 && totalActivity <= 4) intensityClass = 'bg-primary/55';
+    else if (totalActivity > 4) intensityClass = 'bg-primary';
+
+    return {
+      dateStr,
+      totalActivity,
+      intensityClass
+    };
+  });
+
+  return (
+    <div className="space-y-6 pb-24">
+      {/* HEADER SECTION */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-text-primary">Visión Elevada</h2>
+          <p className="text-xs text-text-secondary mt-0.5">
+            Planifica a largo plazo y mide tu constancia mensual.
+          </p>
+        </div>
+
+        {/* Month Navigation */}
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl p-1">
+          <button
+            onClick={() => setMonthOffset(monthOffset - 1)}
+            disabled={monthOffset <= -12}
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-xs font-bold text-text-primary px-3 capitalize">
+            {monthYearLabel}
+          </span>
+          <button
+            onClick={() => setMonthOffset(monthOffset + 1)}
+            disabled={monthOffset >= 12}
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* HEATMAP / CONSISTENCY MAP */}
+      <div className="rounded-2xl glass-panel p-6">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-4 flex items-center gap-1.5">
+          <TrendingUp className="w-4 h-4 text-primary animate-pulse" />
+          <span>Mapa de Consistencia y Estado de Flow</span>
+        </h3>
+
+        <div className="flex flex-col items-center justify-center gap-4">
+          {/* Consistency Heatmap Grid */}
+          <div className="flex flex-wrap gap-1.5 max-w-full justify-center">
+            {heatmapDays.map((day, idx) => (
+              <div
+                key={idx}
+                title={`${day.dateStr}: ${day.totalActivity} actividades completadas`}
+                className={`w-6 h-6 rounded-md ${day.intensityClass} transition-all hover:scale-110 cursor-pointer`}
+              />
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 text-[10px] text-text-secondary">
+            <span>Menos</span>
+            <div className="flex gap-1.5">
+              <div className="w-3.5 h-3.5 rounded bg-white/5" />
+              <div className="w-3.5 h-3.5 rounded bg-primary/20" />
+              <div className="w-3.5 h-3.5 rounded bg-primary/55" />
+              <div className="w-3.5 h-3.5 rounded bg-primary" />
+            </div>
+            <span>Más Flow</span>
+          </div>
+        </div>
+      </div>
+
+      {/* MONTHLY CALENDAR GRID & GOALS SPLIT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Calendar Grid (2 Cols) */}
+        <div className="lg:col-span-2 rounded-2xl glass-panel p-6">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold uppercase text-text-secondary/70 mb-2">
+            <span>Lun</span>
+            <span>Mar</span>
+            <span>Mié</span>
+            <span>Jue</span>
+            <span>Vie</span>
+            <span>Sáb</span>
+            <span>Dom</span>
+          </div>
+
+          <div className="grid grid-cols-7 gap-2">
+            {calendarDays.map((day, idx) => {
+              if (day.padding) {
+                return (
+                  <div key={idx} className="aspect-square rounded-xl bg-white/[0.01] border border-transparent" />
+                );
+              }
+
+              const isToday = day.dateStr === '2026-05-18';
+              const hasTasks = day.tasks.length > 0;
+              const isCompleted = hasTasks && day.tasks.length === day.completedTasks.length;
+
+              return (
+                <div
+                  key={idx}
+                  className={`aspect-square rounded-xl border p-2 flex flex-col justify-between transition-all ${
+                    isToday 
+                      ? 'border-primary bg-primary/5' 
+                      : isCompleted
+                        ? 'border-primary/20 bg-primary/5'
+                        : 'border-white/5 bg-black/20 hover:border-white/10'
+                  }`}
+                >
+                  <span className={`text-xs font-bold ${isToday ? 'text-primary' : 'text-text-primary'}`}>
+                    {day.dayNumber}
+                  </span>
+
+                  <div className="flex gap-1 flex-wrap justify-end">
+                    {day.tasks.map((task: any) => (
+                      <div 
+                        key={task.id} 
+                        title={task.title}
+                        className={`w-2 h-2 rounded-full ${
+                          task.status === 'completed' ? 'bg-primary' : 'bg-accent-violet'
+                        }`} 
+                      />
+                    ))}
+                    {day.habitsCount > 0 && (
+                      <div 
+                        title={`${day.habitsCount} Hábitos logs`}
+                        className="w-2 h-2 rounded bg-accent-blue" 
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Goals Checklist (1 Col) */}
+        <div className="lg:col-span-1 rounded-2xl glass-panel p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <Target className="w-4 h-4 text-warning" />
+                <span>Objetivos del Mes</span>
+              </h3>
+              <button
+                onClick={() => setShowGoalForm(!showGoalForm)}
+                className="p-1 rounded bg-white/5 text-text-secondary hover:text-text-primary transition-all"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Inline Goal Form */}
+            {showGoalForm && (
+              <form onSubmit={handleCreateGoalSubmit} className="mb-4 bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
+                <input
+                  type="text"
+                  required
+                  value={newGoalTitle}
+                  onChange={(e) => setNewGoalTitle(e.target.value)}
+                  placeholder="Ej: Terminar curso Next.js"
+                  className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-primary hover:bg-primary/95 text-black py-1.5 text-xs font-bold transition-all"
+                >
+                  Fijar Objetivo
+                </button>
+              </form>
+            )}
+
+            <div className="space-y-4">
+              {goals.filter(g => g.status === 'in_progress').map((goal) => (
+                <div key={goal.id} className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-text-primary">{goal.title}</h4>
+                      <p className="text-[10px] text-text-secondary mt-0.5">{goal.description}</p>
+                    </div>
+                    <button
+                      onClick={() => handleProgressGoal(goal.id, goal.progress)}
+                      className="flex-shrink-0 text-[10px] bg-white/5 hover:bg-white/15 px-2 py-1 rounded border border-white/5 transition-all text-text-primary"
+                    >
+                      +10%
+                    </button>
+                  </div>
+
+                  {/* Progress Meter */}
+                  <div className="space-y-1">
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-warning transition-all duration-500" 
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[9px] text-text-secondary/50 font-bold">
+                      <span>Progreso</span>
+                      <span>{goal.progress}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-text-secondary">
+            <span>Objetivos Completados:</span>
+            <span className="font-extrabold text-primary flex items-center gap-1">
+              <Award className="w-3.5 h-3.5" />
+              <span>{goals.filter(g => g.status === 'completed').length} logradas</span>
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
