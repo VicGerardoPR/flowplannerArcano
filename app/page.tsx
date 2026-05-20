@@ -25,7 +25,8 @@ export default function Home() {
 
   // Avoid Next.js hydration issues with local storage
   useEffect(() => {
-    setDomHydrated(true);
+    const handle = requestAnimationFrame(() => setDomHydrated(true));
+    return () => cancelAnimationFrame(handle);
   }, []);
 
   // Auto dismiss notifications after 3.5s

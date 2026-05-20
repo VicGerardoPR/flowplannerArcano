@@ -6,13 +6,13 @@
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { 
-  Calendar, CheckCircle, ChevronLeft, ChevronRight, Target, 
-  Flame, Award, Plus, Trash2, ArrowUpRight, TrendingUp
+  ChevronLeft, ChevronRight, Target, 
+  Award, Plus, TrendingUp
 } from 'lucide-react';
+import { Task } from '../../types';
 
 export default function MonthView() {
   const tasks = useFlowStore((state) => state.tasks);
-  const habits = useFlowStore((state) => state.habits);
   const habitLogs = useFlowStore((state) => state.habitLogs);
   const goals = useFlowStore((state) => state.goals);
   const updateGoal = useFlowStore((state) => state.updateGoal);
@@ -46,7 +46,18 @@ export default function MonthView() {
   const firstDayIndex = new Date(year, month, 1).getDay(); // Sun = 0, Mon = 1, etc.
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const calendarDays: any[] = [];
+  type CalendarDay = 
+    | { padding: true }
+    | {
+        padding: false;
+        dayNumber: number;
+        dateStr: string;
+        tasks: Task[];
+        completedTasks: Task[];
+        habitsCount: number;
+      };
+
+  const calendarDays: CalendarDay[] = [];
   
   // Empty spaces for previous month's padding
   const paddingDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Align Mon as first day
@@ -233,7 +244,7 @@ export default function MonthView() {
                   </span>
 
                   <div className="flex gap-1 flex-wrap justify-end">
-                    {day.tasks.map((task: any) => (
+                    {day.tasks.map((task) => (
                       <div 
                         key={task.id} 
                         title={task.title}

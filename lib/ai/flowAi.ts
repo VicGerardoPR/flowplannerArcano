@@ -48,7 +48,7 @@ export const parseNaturalLanguageTask = (text: string): ParsedResult => {
   let category: TaskCategory = 'personal';
   let is_recurring = false;
   let recurrence_rule: string | null = null;
-  let duration_minutes: number | null = null;
+  const duration_minutes: number | null = null;
 
   // 1. Detect recurrence
   if (normalized.includes('todos los') || normalized.includes('cada') || normalized.includes('diario')) {
@@ -174,7 +174,7 @@ export const askFlowAI = (
   suggestedActions?: Array<{
     label: string;
     action: string; // Action identifier
-    payload?: any;
+    payload?: Record<string, unknown>;
   }>;
 } => {
   const normalized = message.toLowerCase();
@@ -258,7 +258,21 @@ export const askFlowAI = (
 /**
  * High-fidelity NLP messaging router used by the interactive chat panel
  */
-export const processFlowAiMessage = (text: string): { feedback: string; actionPayload: any } => {
+export const processFlowAiMessage = (text: string): { 
+  feedback: string; 
+  actionPayload: {
+    type: 'habit' | 'task';
+    title: string;
+    reminder_time?: string;
+    due_date?: string;
+    due_time?: string | null;
+    priority?: 'low' | 'medium' | 'high';
+    category?: 'personal' | 'trabajo' | 'estudio' | 'salud' | 'finanzas' | 'familia' | 'proyecto' | 'otro';
+    is_recurring?: boolean;
+    recurrence_rule?: string | null;
+    duration_minutes?: number;
+  };
+} => {
   const parsed = parseNaturalLanguageTask(text);
   
   if (parsed.is_recurring) {

@@ -3,12 +3,12 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { TaskCategory } from '../../types';
 import { 
   X, Sparkles, Send, Calendar, Clock, Tag, 
-  HelpCircle, Lightbulb, Zap, Award
+  Lightbulb, Zap, Award
 } from 'lucide-react';
 
 interface QuickCaptureProps {
@@ -18,13 +18,6 @@ interface QuickCaptureProps {
 
 export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
   const [input, setInput] = useState('');
-  const [parsedPreview, setParsedPreview] = useState<{
-    title: string;
-    date: string;
-    startTime: string;
-    duration: number;
-    tag: string;
-  } | null>(null);
 
   const addTask = useFlowStore((state) => state.addTask);
   const addXP = useFlowStore((state) => state.addXP);
@@ -35,13 +28,16 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
     return date.toISOString().split('T')[0];
   };
 
-  // Perform light NLP regex parsing
-  useEffect(() => {
-    if (!input.trim()) {
-      setParsedPreview(null);
-      return;
-    }
+  // Perform light NLP regex parsing directly in render
+  let parsedPreview: {
+    title: string;
+    date: string;
+    startTime: string;
+    duration: number;
+    tag: string;
+  } | null = null;
 
+  if (input.trim()) {
     const text = input.toLowerCase();
     
     // 1. Title (everything except date, time, duration, and tags)
@@ -107,15 +103,14 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
     title = title.replace(/\s+/g, ' ').trim();
     if (!title) title = 'Nueva Tarea Flow';
 
-    setParsedPreview({
+    parsedPreview = {
       title,
       date: targetDate,
       startTime,
       duration,
       tag
-    });
-
-  }, [input]);
+    };
+  }
 
   if (!isOpen) return null;
 

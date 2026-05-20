@@ -7,8 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { processFlowAiMessage } from '../../lib/ai/flowAi';
 import { 
-  Sparkles, Send, Bot, User, HelpCircle, AlertTriangle, 
-  Clock, Tag, Check, X, Calendar 
+  Sparkles, Send, Bot, User, 
+  Clock, Tag, Check, Calendar 
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -16,7 +16,18 @@ interface ChatMessage {
   sender: 'user' | 'assistant';
   text: string;
   timestamp: string;
-  parsedPayload?: any;
+  parsedPayload?: {
+    type: 'habit' | 'task';
+    title: string;
+    reminder_time?: string;
+    due_date?: string;
+    due_time?: string | null;
+    priority?: 'low' | 'medium' | 'high';
+    category?: 'personal' | 'trabajo' | 'estudio' | 'salud' | 'finanzas' | 'familia' | 'proyecto' | 'otro';
+    is_recurring?: boolean;
+    recurrence_rule?: string | null;
+    duration_minutes?: number;
+  } | null;
 }
 
 export default function AiChat() {
@@ -26,7 +37,7 @@ export default function AiChat() {
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 'init',
       sender: 'assistant',
@@ -46,6 +57,7 @@ export default function AiChat() {
 
     // 1. Add user message
     const userMsg: ChatMessage = {
+      // eslint-disable-next-line react-hooks/purity
       id: 'user-' + Date.now(),
       sender: 'user',
       text: textToSend,
@@ -73,7 +85,21 @@ export default function AiChat() {
     }, 1000);
   };
 
-  const handleApplyPayload = (msgId: string, payload: any) => {
+  const handleApplyPayload = (
+    msgId: string, 
+    payload: {
+      type: 'habit' | 'task';
+      title: string;
+      reminder_time?: string;
+      due_date?: string;
+      due_time?: string | null;
+      priority?: 'low' | 'medium' | 'high';
+      category?: 'personal' | 'trabajo' | 'estudio' | 'salud' | 'finanzas' | 'familia' | 'proyecto' | 'otro';
+      is_recurring?: boolean;
+      recurrence_rule?: string | null;
+      duration_minutes?: number;
+    }
+  ) => {
     if (payload.type === 'habit') {
       addHabit({
         title: payload.title,
@@ -89,6 +115,7 @@ export default function AiChat() {
       });
       triggerNotification('HÁBITO REGISTRADO', `"${payload.title}" agregado con éxito`, 'success');
     } else {
+      const taskDueDate = payload.due_date || new Date().toISOString().split('T')[0];
       addTask({
         title: payload.title,
         description: 'Creado a través de conversación con Flow AI',
@@ -96,16 +123,16 @@ export default function AiChat() {
         priority: payload.priority || 'medium',
         category: payload.category || 'personal',
         project_id: null,
-        due_date: payload.due_date,
-        due_time: payload.due_time,
+        due_date: taskDueDate,
+        due_time: payload.due_time || null,
         duration_minutes: payload.duration_minutes || 30,
         energy_level: payload.priority === 'high' ? 'high' : 'medium',
-        is_recurring: payload.is_recurring,
-        recurrence_rule: payload.recurrence_rule,
+        is_recurring: !!payload.is_recurring,
+        recurrence_rule: payload.recurrence_rule || null,
         reminder_at: null,
         completed_at: null
       });
-      triggerNotification('TAREA AGENDADA', `"${payload.title}" programada para el ${payload.due_date}`, 'success');
+      triggerNotification('TAREA AGENDADA', `"${payload.title}" programada para el ${taskDueDate}`, 'success');
     }
 
     // Dismiss the suggestion payload card from the message view
@@ -179,7 +206,7 @@ export default function AiChat() {
                     </div>
                     
                     <div className="text-xs font-bold text-text-primary">
-                      "{msg.parsedPayload.title}"
+                      &quot;{msg.parsedPayload.title}&quot;
                     </div>
 
                     <div className="grid grid-cols-1 gap-2 text-[10px] text-text-secondary border-t border-white/5 pt-2.5">
@@ -207,7 +234,7 @@ export default function AiChat() {
                         Descartar
                       </button>
                       <button
-                        onClick={() => handleApplyPayload(msg.id, msg.parsedPayload)}
+                        onClick={() => handleApplyPayload(msg.id, msg.parsedPayload!)}
                         className="w-1/2 flex items-center justify-center gap-1 rounded-lg bg-primary hover:bg-primary/95 text-black text-[10px] font-extrabold py-1.5 transition-all"
                       >
                         <Check className="w-3 h-3" />

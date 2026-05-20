@@ -3,26 +3,14 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { Award, Sparkles, Flame, CheckCircle, Zap, Shield } from 'lucide-react';
 
 export default function Toast() {
   const activeNotification = useFlowStore((state) => state.activeNotification);
-  const clearActiveNotification = useFlowStore((state) => state.clearActiveNotification);
-  const lastLevelUp = useFlowStore((state) => state.lastLevelUp);
 
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (activeNotification) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  }, [activeNotification]);
-
-  if (!visible || !activeNotification) return null;
+  if (!activeNotification) return null;
 
   const getIcon = () => {
     switch (activeNotification.type) {

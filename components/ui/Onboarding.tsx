@@ -84,7 +84,7 @@ export default function Onboarding() {
             </div>
 
             <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
-              Diseñado para entrar en el estado de "Flow". Planifica tu día sin ansiedad con el sistema <span className="text-primary font-semibold">Hoy Limpio</span>, automatiza tus tareas con inteligencia artificial y progresa a través de nuestra gamificación premium.
+              Diseñado para entrar en el estado de &quot;Flow&quot;. Planifica tu día sin ansiedad con el sistema <span className="text-primary font-semibold">Hoy Limpio</span>, automatiza tus tareas con inteligencia artificial y progresa a través de nuestra gamificación premium.
             </p>
 
             <div className="pt-4">

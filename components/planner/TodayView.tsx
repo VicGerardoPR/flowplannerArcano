@@ -5,11 +5,11 @@
 
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
-import { Task } from '../../types';
+import { Task, Mood } from '../../types';
 import { 
-  Flame, CheckCircle, Clock, Zap, AlertTriangle, CheckSquare, 
-  Trash2, Plus, Brain, Compass, Sparkles, Smile, MessageSquare, 
-  Layers, ChevronDown, ChevronUp, Archive, Calendar, HelpCircle
+  Flame, CheckCircle, Clock, AlertTriangle, CheckSquare, 
+  Trash2, Brain, Compass, Smile, 
+  Layers, ChevronDown, ChevronUp, Archive, Calendar
 } from 'lucide-react';
 
 export default function TodayView() {
@@ -26,7 +26,6 @@ export default function TodayView() {
   const completeTask = useFlowStore((state) => state.completeTask);
   const uncompleteTask = useFlowStore((state) => state.uncompleteTask);
   const deleteTask = useFlowStore((state) => state.deleteTask);
-  const addTask = useFlowStore((state) => state.addTask);
   const addSubtask = useFlowStore((state) => state.addSubtask);
   const toggleSubtask = useFlowStore((state) => state.toggleSubtask);
   const deleteSubtask = useFlowStore((state) => state.deleteSubtask);
@@ -67,7 +66,7 @@ export default function TodayView() {
     setIsSavingNote(true);
     saveDailyNote(todayStr, {
       intention,
-      mood: mood as any,
+      mood: mood as Mood,
       energy_score: mood === 'excelente' ? 9 : mood === 'bueno' ? 8 : mood === 'neutral' ? 6 : 4
     });
     setTimeout(() => setIsSavingNote(false), 800);
@@ -562,7 +561,7 @@ export default function TodayView() {
 }
 
 // X inline icon fallback helper
-function X(props: any) {
+function X(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

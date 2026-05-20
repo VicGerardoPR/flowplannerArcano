@@ -5,7 +5,8 @@
 
 import React from 'react';
 import { 
-  CheckSquare, Calendar, Compass, Sparkles, User, Plus 
+  CheckSquare, Calendar, Compass, Sparkles, User, Plus,
+  LucideIcon
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -26,7 +27,7 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenQuickCapture 
     { id: 'profile', label: 'Perfil', icon: User }
   ];
 
-  const renderTabButton = (tab: { id: string; label: string; icon: any }) => {
+  const renderTabButton = (tab: { id: string; label: string; icon: LucideIcon }) => {
     const Icon = tab.icon;
     const isActive = activeTab === tab.id;
 

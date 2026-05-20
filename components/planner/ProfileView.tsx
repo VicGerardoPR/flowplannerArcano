@@ -6,15 +6,15 @@
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { 
-  Award, Sparkles, Flame, CheckCircle, Zap, Shield, 
-  Trash2, Database, Key, Settings, User, RefreshCw, Lock
+  Award, Sparkles, CheckCircle, 
+  Trash2, Database, Settings, Lock
 } from 'lucide-react';
+import { PlanningStyle } from '../../types';
 
 export default function ProfileView() {
   const profile = useFlowStore((state) => state.profile);
   const achievements = useFlowStore((state) => state.achievements);
   const userAchievements = useFlowStore((state) => state.userAchievements);
-  const xpEvents = useFlowStore((state) => state.xpEvents);
   
   const updateProfile = useFlowStore((state) => state.updateProfile);
   const resetAll = useFlowStore((state) => state.resetAll);
@@ -172,7 +172,7 @@ export default function ProfileView() {
               <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider">Estilo de Planificación</label>
               <select
                 value={newPlanningStyle}
-                onChange={(e) => setNewPlanningStyle(e.target.value as any)}
+                onChange={(e) => setNewPlanningStyle(e.target.value as PlanningStyle)}
                 className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all"
               >
                 <option value="simple">Simple (Listas de tareas rápidas)</option>
