@@ -100,11 +100,14 @@ interface FlowState {
   resetAll: () => void;
 }
 
-// Generate relative dates from May 18, 2026 (or today if browser runs it)
+// Generate relative dates from the local today's date dynamically
 const getRelativeDateStr = (offsetDays: number): string => {
-  const d = new Date('2026-05-18');
+  const d = new Date();
   d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const defaultProfile: Profile = {
@@ -120,8 +123,8 @@ const defaultProfile: Profile = {
   theme: 'dark',
   xp: 1250,
   level: 3,
-  created_at: new Date('2026-05-01').toISOString(),
-  updated_at: new Date('2026-05-18').toISOString(),
+  created_at: new Date(Date.now() - 17 * 86400000).toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 // Initial Projects Seed
@@ -142,7 +145,7 @@ const initialTasks: Task[] = [
   // TODAY TASKS (Mix of pending and one completed)
   { id: 'task-t1', user_id: 'demo-user-id', title: 'Implementar store de Zustand', description: 'Conectar tareas, hábitos y lógica de XP offline-first', status: 'pending', priority: 'high', category: 'trabajo', project_id: 'proj-1', due_date: getRelativeDateStr(0), due_time: '09:00', duration_minutes: 90, energy_level: 'high', is_recurring: false, recurrence_rule: null, reminder_at: null, completed_at: null, created_at: getRelativeDateStr(-1), updated_at: getRelativeDateStr(0) },
   { id: 'task-t2', user_id: 'demo-user-id', title: 'Diseñar la pantalla de Onboarding', description: 'Crear transiciones fluidas de bienvenida y selección de objetivos', status: 'pending', priority: 'high', category: 'proyecto', project_id: 'proj-1', due_date: getRelativeDateStr(0), due_time: '11:30', duration_minutes: 60, energy_level: 'medium', is_recurring: false, recurrence_rule: null, reminder_at: null, completed_at: null, created_at: getRelativeDateStr(-1), updated_at: getRelativeDateStr(0) },
-  { id: 'task-t3', user_id: 'demo-user-id', title: 'Hacer cardio suave 30 minutos', description: 'Caminar a paso ligero o trote suave', status: 'completed', priority: 'medium', category: 'salud', project_id: 'proj-2', due_date: getRelativeDateStr(0), due_time: '08:00', duration_minutes: 30, energy_level: 'medium', is_recurring: false, recurrence_rule: null, reminder_at: null, completed_at: new Date('2026-05-18T08:30:00').toISOString(), created_at: getRelativeDateStr(0), updated_at: getRelativeDateStr(0) },
+  { id: 'task-t3', user_id: 'demo-user-id', title: 'Hacer cardio suave 30 minutos', description: 'Caminar a paso ligero o trote suave', status: 'completed', priority: 'medium', category: 'salud', project_id: 'proj-2', due_date: getRelativeDateStr(0), due_time: '08:00', duration_minutes: 30, energy_level: 'medium', is_recurring: false, recurrence_rule: null, reminder_at: null, completed_at: new Date(getRelativeDateStr(0) + 'T08:30:00').toISOString(), created_at: getRelativeDateStr(0), updated_at: getRelativeDateStr(0) },
   { id: 'task-t4', user_id: 'demo-user-id', title: 'Revisión técnica de Tailwind CSS v4', description: 'Revisar mejoras y configuración del archivo globals.css', status: 'pending', priority: 'low', category: 'estudio', project_id: 'proj-3', due_date: getRelativeDateStr(0), due_time: '18:00', duration_minutes: 45, energy_level: 'medium', is_recurring: false, recurrence_rule: null, reminder_at: null, completed_at: null, created_at: getRelativeDateStr(0), updated_at: getRelativeDateStr(0) },
 
   // Overdue / Pending Task (to test "Hoy Limpio" feature)
@@ -166,7 +169,8 @@ const initialHabits: Habit[] = [
 const initialHabitLogs: HabitLog[] = [];
 for (let i = -14; i < 0; i++) {
   const dateStr = getRelativeDateStr(i);
-  const dayName = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const [yr, mo, dy] = dateStr.split('-').map(Number);
+  const dayName = new Date(yr, mo - 1, dy).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   
   // Meditate almost every day (85% consistency)
   if (Math.random() < 0.85) {

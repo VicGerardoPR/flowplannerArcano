@@ -33,10 +33,16 @@ export default function TodayView() {
   const saveDailyNote = useFlowStore((state) => state.saveDailyNote);
   const reschedulePendingTasks = useFlowStore((state) => state.reschedulePendingTasks);
   const archivePendingTasks = useFlowStore((state) => state.archivePendingTasks);
+  const addTask = useFlowStore((state) => state.addTask);
+  const updateTask = useFlowStore((state) => state.updateTask);
 
   // Local Relative Date constant
-  const todayStr = '2026-05-18';
-  const tomorrowStr = '2026-05-19';
+  const todayDate = new Date();
+  const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
+  
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(todayDate.getDate() + 1);
+  const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
 
   // Overdue and Today's Tasks
   const overdueTasks = tasks.filter(t => t.status === 'pending' && t.due_date < todayStr);
@@ -69,6 +75,37 @@ export default function TodayView() {
       mood: mood as Mood,
       energy_score: mood === 'excelente' ? 9 : mood === 'bueno' ? 8 : mood === 'neutral' ? 6 : 4
     });
+
+    if (intention.trim()) {
+      const existingTask = tasks.find(
+        (t) => t.due_date === todayStr && t.title.startsWith('Enfoque del día:')
+      );
+
+      if (existingTask) {
+        updateTask(existingTask.id, {
+          title: `Enfoque del día: ${intention.trim()}`,
+          description: `Intención diaria registrada: "${intention.trim()}"`,
+        });
+      } else {
+        addTask({
+          title: `Enfoque del día: ${intention.trim()}`,
+          description: `Intención diaria registrada: "${intention.trim()}"`,
+          status: 'pending',
+          priority: 'high',
+          category: 'personal',
+          project_id: null,
+          due_date: todayStr,
+          due_time: '08:00',
+          duration_minutes: 30,
+          energy_level: 'high',
+          is_recurring: false,
+          recurrence_rule: null,
+          reminder_at: null,
+          completed_at: null,
+        });
+      }
+    }
+
     setTimeout(() => setIsSavingNote(false), 800);
   };
 
@@ -96,7 +133,10 @@ export default function TodayView() {
             ¡Hola, {profile.full_name}! 👋
           </h2>
           <p className="text-xs text-text-secondary mt-0.5">
-            Lunes, 18 de Mayo de 2026 • Enfoque del día: <span className="text-primary font-medium">{profile.planning_style === 'ai' || profile.planning_style === 'projects' ? 'Productividad Premium' : 'Flujo Equilibrado'}</span>
+            {(() => {
+              const label = todayDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+              return label.charAt(0).toUpperCase() + label.slice(1);
+            })()} • Enfoque del día: <span className="text-primary font-medium">{profile.planning_style === 'ai' || profile.planning_style === 'projects' ? 'Productividad Premium' : 'Flujo Equilibrado'}</span>
           </p>
         </div>
 

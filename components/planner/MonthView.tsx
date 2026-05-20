@@ -26,9 +26,10 @@ export default function MonthView() {
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [showGoalForm, setShowGoalForm] = useState(false);
 
-  // May 2026 Anchor
-  const baseYear = 2026;
-  const baseMonth = 4; // May (0-indexed: January is 0, May is 4)
+  // Base month anchor relative to today's local system date
+  const todayDate = new Date();
+  const baseYear = todayDate.getFullYear();
+  const baseMonth = todayDate.getMonth(); // 0-indexed local month
 
   const getTargetMonthYear = () => {
     const d = new Date(baseYear, baseMonth + monthOffset, 1);
@@ -98,7 +99,9 @@ export default function MonthView() {
     e.preventDefault();
     if (!newGoalTitle.trim()) return;
 
-    addGoal(newGoalTitle.trim(), 'Meta mensual creada.', 'monthly', '2026-05-30');
+    const endOfMonth = new Date(year, month + 1, 0);
+    const endOfMonthStr = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+    addGoal(newGoalTitle.trim(), 'Meta mensual creada.', 'monthly', endOfMonthStr);
     setNewGoalTitle('');
     setShowGoalForm(false);
 
@@ -109,12 +112,14 @@ export default function MonthView() {
     );
   };
 
-  // Github-like Heatmap grid calculation for the last 14 days of May
-  // Using relative date logic
+  // Consistency Heatmap calculation relative to today's local system date
   const getRelativeDateStr = (offsetDays: number): string => {
-    const d = new Date('2026-05-18');
+    const d = new Date();
     d.setDate(d.getDate() + offsetDays);
-    return d.toISOString().split('T')[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const heatmapDays = Array.from({ length: 28 }, (_, i) => {
@@ -224,7 +229,9 @@ export default function MonthView() {
                 );
               }
 
-              const isToday = day.dateStr === '2026-05-18';
+              const todayObj = new Date();
+              const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+              const isToday = day.dateStr === todayStr;
               const hasTasks = day.tasks.length > 0;
               const isCompleted = hasTasks && day.tasks.length === day.completedTasks.length;
 

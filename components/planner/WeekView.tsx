@@ -21,15 +21,22 @@ export default function WeekView() {
   // Focus week offset (0 = current week, 1 = next week, etc.)
   const [weekOffset, setWeekOffset] = useState(0);
 
-  // Base dates representing Lunes May 18, 2026
+  // Base dates representing the Monday of the active week dynamically relative to today
   const getLocalDate = (offsetDays: number) => {
-    const d = new Date('2026-05-18');
-    d.setDate(d.getDate() + offsetDays + weekOffset * 7);
-    return d;
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust Sunday (0) to Monday (1)
+    const monday = new Date(d.setDate(diff));
+    monday.setDate(monday.getDate() + offsetDays + weekOffset * 7);
+    return monday;
   };
 
   const getLocalDateStr = (offsetDays: number) => {
-    return getLocalDate(offsetDays).toISOString().split('T')[0];
+    const d = getLocalDate(offsetDays);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Generate 7-day array
@@ -154,7 +161,9 @@ export default function WeekView() {
       {/* WEEK ENERGY & HOURS TRACKER GRID */}
       <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
         {weekDays.map((day, idx) => {
-          const isToday = day.dateStr === '2026-05-18';
+          const todayObj = new Date();
+          const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+          const isToday = day.dateStr === todayStr;
           const isOverloaded = day.estimatedHours > 5;
           const isEnergyHeavy = day.energyScore > 8;
 
