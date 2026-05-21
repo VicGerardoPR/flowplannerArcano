@@ -60,53 +60,79 @@ export default function TodayView() {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   
   // Intention Form States
-  const [intention, setIntention] = useState(todayNote?.intention || '');
+  const [intention, setIntention] = useState('');
   const [mood, setMood] = useState<string>(todayNote?.mood || 'excelente');
   const [isSavingNote, setIsSavingNote] = useState(false);
 
   // Hoy Limpio Modal toggle
   const [showHoyLimpioModal, setShowHoyLimpioModal] = useState(false);
 
+  // Quick direct inline task adding
+  const [inlineTaskTitle, setInlineTaskTitle] = useState('');
+
   const handleSaveNote = (e: React.FormEvent) => {
     e.preventDefault();
+    const newIntentionText = intention.trim();
+    if (!newIntentionText) return;
+
     setIsSavingNote(true);
+
+    const currentIntention = todayNote?.intention;
+    const updatedIntention = currentIntention 
+      ? `${currentIntention}\n• ${newIntentionText}`
+      : `• ${newIntentionText}`;
+
     saveDailyNote(todayStr, {
-      intention,
+      intention: updatedIntention,
       mood: mood as Mood,
       energy_score: mood === 'excelente' ? 9 : mood === 'bueno' ? 8 : mood === 'neutral' ? 6 : 4
     });
 
-    if (intention.trim()) {
-      const existingTask = tasks.find(
-        (t) => t.due_date === todayStr && t.title.startsWith('Enfoque del día:')
-      );
+    addTask({
+      title: newIntentionText,
+      description: 'Enfoque registrado desde Mi Intención para Hoy',
+      status: 'pending',
+      priority: 'high',
+      category: 'personal',
+      project_id: null,
+      due_date: todayStr,
+      due_time: '08:00',
+      duration_minutes: 30,
+      energy_level: 'high',
+      is_recurring: false,
+      recurrence_rule: null,
+      reminder_at: null,
+      completed_at: null,
+    });
 
-      if (existingTask) {
-        updateTask(existingTask.id, {
-          title: `Enfoque del día: ${intention.trim()}`,
-          description: `Intención diaria registrada: "${intention.trim()}"`,
-        });
-      } else {
-        addTask({
-          title: `Enfoque del día: ${intention.trim()}`,
-          description: `Intención diaria registrada: "${intention.trim()}"`,
-          status: 'pending',
-          priority: 'high',
-          category: 'personal',
-          project_id: null,
-          due_date: todayStr,
-          due_time: '08:00',
-          duration_minutes: 30,
-          energy_level: 'high',
-          is_recurring: false,
-          recurrence_rule: null,
-          reminder_at: null,
-          completed_at: null,
-        });
-      }
-    }
+    // Reset input text box so user can add another task
+    setIntention('');
 
     setTimeout(() => setIsSavingNote(false), 800);
+  };
+
+  const handleAddInlineTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inlineTaskTitle.trim()) return;
+
+    addTask({
+      title: inlineTaskTitle.trim(),
+      description: 'Capturado de forma directa en el día',
+      status: 'pending',
+      priority: 'medium',
+      category: 'trabajo',
+      project_id: null,
+      due_date: todayStr,
+      due_time: null,
+      duration_minutes: 30,
+      energy_level: 'medium',
+      is_recurring: false,
+      recurrence_rule: null,
+      reminder_at: null,
+      completed_at: null,
+    });
+
+    setInlineTaskTitle('');
   };
 
   const handleToggleTask = (task: Task) => {
@@ -280,6 +306,16 @@ export default function TodayView() {
               </button>
             </div>
           </form>
+
+          {/* List of registered focuses for today */}
+          {todayNote?.intention && (
+            <div className="mt-4 pt-3 border-t border-white/5 space-y-2">
+              <span className="text-[10px] uppercase font-black tracking-wider text-text-secondary">Enfoques de Hoy Registrados:</span>
+              <div className="text-xs text-text-primary/90 whitespace-pre-line leading-relaxed pl-2 border-l border-primary/40 font-medium">
+                {todayNote.intention}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
@@ -344,6 +380,24 @@ export default function TodayView() {
             {todayTasks.filter(t => t.status === 'completed').length}/{todayTasks.length} Listas
           </span>
         </div>
+
+        {/* Direct Inline Quick Task Capture */}
+        <form onSubmit={handleAddInlineTask} className="mb-4 flex gap-2">
+          <input
+            type="text"
+            value={inlineTaskTitle}
+            onChange={(e) => setInlineTaskTitle(e.target.value)}
+            placeholder="Escribe una tarea para hoy y presiona Enter o Añadir..."
+            className="flex-1 rounded-xl bg-[#050607]/80 border border-white/10 px-4 py-2.5 text-xs text-text-primary placeholder:text-text-secondary/30 focus:border-primary/50 focus:outline-none transition-all"
+          />
+          <button
+            type="submit"
+            disabled={!inlineTaskTitle.trim()}
+            className="rounded-xl bg-primary hover:bg-primary/95 text-black disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Añadir</span>
+          </button>
+        </form>
 
         {todayTasks.length === 0 ? (
           <div className="text-center py-10">

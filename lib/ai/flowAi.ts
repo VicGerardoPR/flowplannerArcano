@@ -2,6 +2,7 @@
 // Developed by Arcano Intelligence
 
 import { Task, Priority, TaskCategory, Habit } from '../../types';
+import { toLocalDateStr, getRelativeLocalDate } from '../dateUtils';
 
 interface ParsedResult {
   title: string;
@@ -16,9 +17,7 @@ interface ParsedResult {
 
 // Simple local date helpers
 const getRelativeDate = (days: number): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  return getRelativeLocalDate(days);
 };
 
 const getNextDayOfWeek = (dayName: string): string => {
@@ -32,7 +31,7 @@ const getNextDayOfWeek = (dayName: string): string => {
   if (diff <= 0) diff += 7; // Next week's day
   
   d.setDate(d.getDate() + diff);
-  return d.toISOString().split('T')[0];
+  return toLocalDateStr(d);
 };
 
 /**
@@ -93,7 +92,7 @@ export const parseNaturalLanguageTask = (text: string): ParsedResult => {
         d.setMonth(d.getMonth() + 1);
       }
       d.setDate(targetDay);
-      due_date = d.toISOString().split('T')[0];
+      due_date = toLocalDateStr(d);
     }
   }
 
@@ -180,7 +179,7 @@ export const askFlowAI = (
   const normalized = message.toLowerCase();
   
   if (normalized.includes('pendiente') || normalized.includes('hoy') || normalized.includes('que tengo')) {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = toLocalDateStr();
     const todayTasks = context.tasks.filter(t => t.due_date === todayStr && t.status === 'pending');
     
     if (todayTasks.length === 0) {

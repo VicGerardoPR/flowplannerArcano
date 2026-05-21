@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { TaskCategory } from '../../types';
+import { toLocalDateStr } from '../../lib/dateUtils';
 import { 
   X, Sparkles, Send, Calendar, Clock, Tag, 
   Lightbulb, Zap, Award
@@ -25,7 +26,7 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
 
   // Helper to parse dates
   const formatDateString = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return toLocalDateStr(date);
   };
 
   // Perform light NLP regex parsing directly in render

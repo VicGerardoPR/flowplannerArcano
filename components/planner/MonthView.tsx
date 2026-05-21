@@ -10,6 +10,7 @@ import {
   Award, Plus, TrendingUp
 } from 'lucide-react';
 import { Task } from '../../types';
+import { toLocalDateStr } from '../../lib/dateUtils';
 
 export default function MonthView() {
   const tasks = useFlowStore((state) => state.tasks);
@@ -69,7 +70,7 @@ export default function MonthView() {
   // Populate actual month days
   for (let i = 1; i <= daysInMonth; i++) {
     const dayDate = new Date(year, month, i);
-    const dateStr = dayDate.toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(dayDate);
     
     const dayTasks = tasks.filter(t => t.due_date === dateStr && t.status !== 'archived');
     const dayCompleted = dayTasks.filter(t => t.status === 'completed');

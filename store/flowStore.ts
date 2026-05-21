@@ -391,7 +391,7 @@ export const useFlowStore = create<FlowState>()(
         }
 
         // Daily Goal completion check
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getRelativeDateStr(0);
         const completedToday = get().tasks.filter(t => t.due_date === todayStr && t.status === 'completed').length;
         if (completedToday === profile.daily_task_goal) {
           // Trigger Perfect Flow Day!
@@ -759,6 +759,28 @@ export const useFlowStore = create<FlowState>()(
     }),
     {
       name: 'flowplanner-storage', // local storage key
+      version: 2, // Bump to force re-seed after UTC→local date fix
+      // Deep merge persisted state to prevent hydration from overwriting arrays
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<FlowState> | undefined;
+        if (!persisted) return currentState;
+        return {
+          ...currentState,
+          ...persisted,
+          // Ensure arrays are never lost — prefer persisted data if present
+          tasks: persisted.tasks ?? currentState.tasks,
+          subtasks: persisted.subtasks ?? currentState.subtasks,
+          projects: persisted.projects ?? currentState.projects,
+          habits: persisted.habits ?? currentState.habits,
+          habitLogs: persisted.habitLogs ?? currentState.habitLogs,
+          dailyNotes: persisted.dailyNotes ?? currentState.dailyNotes,
+          xpEvents: persisted.xpEvents ?? currentState.xpEvents,
+          goals: persisted.goals ?? currentState.goals,
+          aiSuggestions: persisted.aiSuggestions ?? currentState.aiSuggestions,
+          achievements: persisted.achievements ?? currentState.achievements,
+          userAchievements: persisted.userAchievements ?? currentState.userAchievements,
+        };
+      },
     }
   )
 );

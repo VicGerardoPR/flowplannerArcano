@@ -9,6 +9,7 @@ import {
   Calendar, Clock, Zap, ArrowLeft, ArrowRight, Sparkles, 
   Check, Archive, AlertTriangle, Layers, ListTodo
 } from 'lucide-react';
+import { toLocalDateStr } from '../../lib/dateUtils';
 
 export default function WeekView() {
   const tasks = useFlowStore((state) => state.tasks);
@@ -77,7 +78,7 @@ export default function WeekView() {
     
     const currentDate = new Date(task.due_date);
     currentDate.setDate(currentDate.getDate() + offset);
-    const newDateStr = currentDate.toISOString().split('T')[0];
+    const newDateStr = toLocalDateStr(currentDate);
 
     updateTask(taskId, { due_date: newDateStr });
     

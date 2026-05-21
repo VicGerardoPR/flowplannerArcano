@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { processFlowAiMessage } from '../../lib/ai/flowAi';
+import { toLocalDateStr } from '../../lib/dateUtils';
 import { 
   Sparkles, Send, Bot, User, 
   Clock, Tag, Check, Calendar 
@@ -115,7 +116,7 @@ export default function AiChat() {
       });
       triggerNotification('HÁBITO REGISTRADO', `"${payload.title}" agregado con éxito`, 'success');
     } else {
-      const taskDueDate = payload.due_date || new Date().toISOString().split('T')[0];
+      const taskDueDate = payload.due_date || toLocalDateStr();
       addTask({
         title: payload.title,
         description: 'Creado a través de conversación con Flow AI',
