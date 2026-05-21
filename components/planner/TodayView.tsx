@@ -5,12 +5,15 @@
 
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
+import { toLocalDateStr } from '../../lib/dateUtils';
 import { Task, Mood } from '../../types';
 import { 
   Flame, CheckCircle, Clock, AlertTriangle, CheckSquare, 
   Trash2, Brain, Compass, Smile, 
-  Layers, ChevronDown, ChevronUp, Archive, Calendar
+  Layers, ChevronDown, ChevronUp, Archive, Calendar, Settings,
+  BookOpen, Heart, Activity, Coffee, Code, Sparkles, Dumbbell, Target
 } from 'lucide-react';
+import ManageHabitsModal from './ManageHabitsModal';
 
 export default function TodayView() {
   // Store States
@@ -35,6 +38,7 @@ export default function TodayView() {
   const archivePendingTasks = useFlowStore((state) => state.archivePendingTasks);
   const addTask = useFlowStore((state) => state.addTask);
   const updateTask = useFlowStore((state) => state.updateTask);
+  const triggerNotification = useFlowStore((state) => state.triggerNotification);
 
   // Local Relative Date constant
   const todayDate = new Date();
@@ -67,8 +71,12 @@ export default function TodayView() {
   // Hoy Limpio Modal toggle
   const [showHoyLimpioModal, setShowHoyLimpioModal] = useState(false);
 
+  // Manage Habits Modal toggle
+  const [isManageHabitsOpen, setIsManageHabitsOpen] = useState(false);
+
   // Quick direct inline task adding
   const [inlineTaskTitle, setInlineTaskTitle] = useState('');
+  const [inlineTaskDate, setInlineTaskDate] = useState(todayStr);
 
   const handleSaveNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +130,7 @@ export default function TodayView() {
       priority: 'medium',
       category: 'trabajo',
       project_id: null,
-      due_date: todayStr,
+      due_date: inlineTaskDate,
       due_time: null,
       duration_minutes: 30,
       energy_level: 'medium',
@@ -132,7 +140,25 @@ export default function TodayView() {
       completed_at: null,
     });
 
+    if (inlineTaskDate !== todayStr) {
+      const dateParts = inlineTaskDate.split('-').map(Number);
+      const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+      const formattedDate = dateObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+      triggerNotification(
+        'TAREA PROGRAMADA',
+        `"${inlineTaskTitle.trim()}" agregada para el ${formattedDate}`,
+        'success'
+      );
+    } else {
+      triggerNotification(
+        'TAREA REGISTRADA',
+        `"${inlineTaskTitle.trim()}" agregada a tu agenda de hoy`,
+        'success'
+      );
+    }
+
     setInlineTaskTitle('');
+    setInlineTaskDate(todayStr);
   };
 
   const handleToggleTask = (task: Task) => {
@@ -307,48 +333,58 @@ export default function TodayView() {
             </div>
           </form>
 
-          {/* List of registered focuses for today */}
-          {todayNote?.intention && (
-            <div className="mt-4 pt-3 border-t border-white/5 space-y-2">
-              <span className="text-[10px] uppercase font-black tracking-wider text-text-secondary">Enfoques de Hoy Registrados:</span>
-              <div className="text-xs text-text-primary/90 whitespace-pre-line leading-relaxed pl-2 border-l border-primary/40 font-medium">
-                {todayNote.intention}
-              </div>
-            </div>
-          )}
+
         </div>
 
       </div>
 
       {/* TODAY'S HABITS SECTION */}
       <div className="rounded-2xl glass-panel p-6">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-4 flex items-center gap-1.5">
-          <Flame className="w-4 h-4 text-accent-blue" />
-          <span>Rutina de Hábitos Diarios</span>
-        </h3>
+        <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+            <Flame className="w-4 h-4 text-accent-blue animate-pulse" />
+            <span>Rutina de Hábitos Diarios</span>
+          </h3>
+          <button
+            onClick={() => setIsManageHabitsOpen(true)}
+            className="flex items-center gap-1 text-[10px] uppercase font-bold text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Administrar</span>
+          </button>
+        </div>
         
-        {habits.length === 0 ? (
-          <p className="text-xs text-text-secondary text-center py-4">No tienes hábitos activos creados. ¡Crea uno en Perfil o en Captura Rápida!</p>
+        {habits.filter(h => h.is_active !== false).length === 0 ? (
+          <p className="text-xs text-text-secondary text-center py-4">No tienes hábitos activos creados. ¡Crea o activa hábitos en Administrar!</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {habits.map((habit) => {
+            {habits.filter(h => h.is_active !== false).map((habit) => {
               const isCompleted = habitLogs.some(l => l.habit_id === habit.id && l.log_date === todayStr);
+              
+              // Dynamic Icon Resolver
+              const IconComp = (() => {
+                const iconMap: Record<string, React.ComponentType<any>> = {
+                  Flame, Brain, BookOpen, Compass, Heart, Activity, Coffee, Code, Sparkles, Smile, Dumbbell, Target
+                };
+                return iconMap[habit.icon] || Brain;
+              })();
+
               return (
                 <button
                   key={habit.id}
                   onClick={() => toggleHabit(habit.id, todayStr)}
-                  className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
+                  className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     isCompleted 
-                      ? 'border-primary/40 bg-primary/5 text-text-primary' 
+                      ? 'border-primary/45 bg-primary/5 text-text-primary' 
                       : 'border-white/5 bg-black/20 text-text-secondary hover:border-white/10 hover:bg-black/30'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${habit.color}15`, border: `1px solid ${habit.color}30`, color: habit.color }}
                     >
-                      <Flame className="w-4 h-4" />
+                      <IconComp className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-text-primary line-clamp-1">{habit.title}</div>
@@ -382,21 +418,29 @@ export default function TodayView() {
         </div>
 
         {/* Direct Inline Quick Task Capture */}
-        <form onSubmit={handleAddInlineTask} className="mb-4 flex gap-2">
+        <form onSubmit={handleAddInlineTask} className="mb-4 flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={inlineTaskTitle}
             onChange={(e) => setInlineTaskTitle(e.target.value)}
-            placeholder="Escribe una tarea para hoy y presiona Enter o Añadir..."
+            placeholder="Escribe una tarea y presiona Añadir..."
             className="flex-1 rounded-xl bg-[#050607]/80 border border-white/10 px-4 py-2.5 text-xs text-text-primary placeholder:text-text-secondary/30 focus:border-primary/50 focus:outline-none transition-all"
           />
-          <button
-            type="submit"
-            disabled={!inlineTaskTitle.trim()}
-            className="rounded-xl bg-primary hover:bg-primary/95 text-black disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Añadir</span>
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <input
+              type="date"
+              value={inlineTaskDate}
+              onChange={(e) => setInlineTaskDate(e.target.value)}
+              className="flex-1 sm:flex-initial rounded-xl bg-[#050607]/80 border border-white/10 px-3 py-2.5 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all cursor-pointer font-bold scheme-dark"
+            />
+            <button
+              type="submit"
+              disabled={!inlineTaskTitle.trim()}
+              className="rounded-xl bg-primary hover:bg-primary/95 text-black disabled:opacity-30 disabled:cursor-not-allowed px-4 py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <span>Añadir</span>
+            </button>
+          </div>
         </form>
 
         {todayTasks.length === 0 ? (
@@ -649,6 +693,12 @@ export default function TodayView() {
           </div>
         </div>
       )}
+
+      {/* Habits Customization Modal */}
+      <ManageHabitsModal 
+        isOpen={isManageHabitsOpen} 
+        onClose={() => setIsManageHabitsOpen(false)} 
+      />
 
     </div>
   );

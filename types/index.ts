@@ -28,6 +28,12 @@ export interface Profile {
   level: number;
   created_at: string;
   updated_at: string;
+  google_calendar_connected?: boolean;
+  google_calendar_email?: string | null;
+  google_calendar_target_list?: string | null;
+  apple_calendar_connected?: boolean;
+  sync_tasks_enabled?: boolean;
+  sync_habits_enabled?: boolean;
 }
 
 export interface Project {

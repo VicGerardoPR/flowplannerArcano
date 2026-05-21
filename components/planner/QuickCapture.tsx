@@ -3,7 +3,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { TaskCategory } from '../../types';
 import { toLocalDateStr } from '../../lib/dateUtils';
@@ -20,43 +20,53 @@ interface QuickCaptureProps {
 export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
   const [input, setInput] = useState('');
 
+  // Editable parsed states
+  const [parsedTitle, setParsedTitle] = useState('');
+  const [parsedDate, setParsedDate] = useState(toLocalDateStr(new Date()));
+  const [parsedTime, setParsedTime] = useState('09:00');
+  const [parsedDuration, setParsedDuration] = useState(60);
+  const [parsedTag, setParsedTag] = useState('trabajo');
+
+  // Track manual overrides
+  const [userOverrides, setUserOverrides] = useState<{
+    title?: boolean;
+    date?: boolean;
+    time?: boolean;
+    duration?: boolean;
+    tag?: boolean;
+  }>({});
+
   const addTask = useFlowStore((state) => state.addTask);
   const addXP = useFlowStore((state) => state.addXP);
   const triggerNotification = useFlowStore((state) => state.triggerNotification);
 
-  // Helper to parse dates
-  const formatDateString = (date: Date) => {
-    return toLocalDateStr(date);
-  };
+  // Sync NLP engine in real-time
+  useEffect(() => {
+    if (!input.trim()) {
+      if (!userOverrides.title) setParsedTitle('');
+      if (!userOverrides.date) setParsedDate(toLocalDateStr(new Date()));
+      if (!userOverrides.time) setParsedTime('09:00');
+      if (!userOverrides.duration) setParsedDuration(60);
+      if (!userOverrides.tag) setParsedTag('trabajo');
+      return;
+    }
 
-  // Perform light NLP regex parsing directly in render
-  let parsedPreview: {
-    title: string;
-    date: string;
-    startTime: string;
-    duration: number;
-    tag: string;
-  } | null = null;
-
-  if (input.trim()) {
     const text = input.toLowerCase();
-    
-    // 1. Title (everything except date, time, duration, and tags)
     let title = input;
 
-    // 2. Date parsing
-    let targetDate = formatDateString(new Date()); // default is today
+    // Date parsing
+    let targetDate = toLocalDateStr(new Date());
     if (text.includes('mañana')) {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      targetDate = formatDateString(tomorrow);
+      targetDate = toLocalDateStr(tomorrow);
       title = title.replace(/mañana/gi, '');
     } else if (text.includes('hoy')) {
-      targetDate = formatDateString(new Date());
+      targetDate = toLocalDateStr(new Date());
       title = title.replace(/hoy/gi, '');
     }
 
-    // 3. Time parsing (e.g. "a las 3:00pm", "a las 15:30", "a las 3pm")
+    // Time parsing
     let startTime = '09:00';
     const timeMatch = text.match(/a las\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
     if (timeMatch) {
@@ -76,8 +86,8 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
       title = title.replace(timeMatch[0], '');
     }
 
-    // 4. Duration parsing (e.g. "de 2 horas", "de 45 minutos", "de 1 hora")
-    let duration = 60; // default to 60 mins
+    // Duration parsing
+    let duration = 60;
     const durationMinMatch = text.match(/de\s*(\d+)\s*minutos/i);
     const durationHourMatch = text.match(/de\s*(\d+)\s*hora/i);
     
@@ -89,13 +99,13 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
       title = title.replace(durationHourMatch[0], '');
     }
 
-    // 5. Tag parsing (e.g. #trabajo, #personal, #salud, #estudios)
+    // Tag parsing
     let tag = 'trabajo';
     const tagMatch = text.match(/#(\w+)/);
     if (tagMatch) {
-      const parsedTag = tagMatch[1];
-      if (['trabajo', 'personal', 'salud', 'estudios'].includes(parsedTag)) {
-        tag = parsedTag;
+      const parsedTagMatch = tagMatch[1];
+      if (['trabajo', 'personal', 'salud', 'estudios'].includes(parsedTagMatch)) {
+        tag = parsedTagMatch;
       }
       title = title.replace(tagMatch[0], '');
     }
@@ -104,38 +114,56 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
     title = title.replace(/\s+/g, ' ').trim();
     if (!title) title = 'Nueva Tarea Flow';
 
-    parsedPreview = {
-      title,
-      date: targetDate,
-      startTime,
-      duration,
-      tag
-    };
-  }
+    if (!userOverrides.title) setParsedTitle(title);
+    if (!userOverrides.date) setParsedDate(targetDate);
+    if (!userOverrides.time) setParsedTime(startTime);
+    if (!userOverrides.duration) setParsedDuration(duration);
+    if (!userOverrides.tag) setParsedTag(tag);
+  }, [input, userOverrides]);
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    setInput('');
+    setParsedTitle('');
+    setParsedDate(toLocalDateStr(new Date()));
+    setParsedTime('09:00');
+    setParsedDuration(60);
+    setParsedTag('trabajo');
+    setUserOverrides({});
+    onClose();
+  };
+
+  const handleFieldChange = (field: string, value: any) => {
+    setUserOverrides(prev => ({ ...prev, [field]: true }));
+    if (field === 'title') setParsedTitle(value);
+    if (field === 'date') setParsedDate(value);
+    if (field === 'time') setParsedTime(value);
+    if (field === 'duration') setParsedDuration(Number(value));
+    if (field === 'tag') setParsedTag(value);
+  };
+
   const handleQuickSave = () => {
-    if (!input.trim() || !parsedPreview) return;
+    if (!input.trim() || !parsedTitle.trim()) return;
 
     // Map tag to TaskCategory
     let category: TaskCategory = 'trabajo';
-    if (parsedPreview.tag === 'personal') category = 'personal';
-    else if (parsedPreview.tag === 'salud') category = 'salud';
-    else if (parsedPreview.tag === 'estudios') category = 'estudio';
+    if (parsedTag === 'personal') category = 'personal';
+    else if (parsedTag === 'salud') category = 'salud';
+    else if (parsedTag === 'estudios') category = 'estudio';
 
     // 1. Create matching task
     const newTaskId = addTask({
-      title: parsedPreview.title,
+      title: parsedTitle.trim(),
       description: 'Capturado de forma rápida vía FlowNLP',
       status: 'pending',
-      priority: parsedPreview.duration >= 90 ? 'high' : parsedPreview.duration >= 45 ? 'medium' : 'low',
+      priority: parsedDuration >= 90 ? 'high' : parsedDuration >= 45 ? 'medium' : 'low',
       category,
       project_id: null,
-      due_date: parsedPreview.date,
-      due_time: parsedPreview.startTime,
-      duration_minutes: parsedPreview.duration,
-      energy_level: parsedPreview.duration >= 90 ? 'high' : parsedPreview.duration >= 45 ? 'medium' : 'low',
+      due_date: parsedDate,
+      due_time: parsedTime,
+      duration_minutes: parsedDuration,
+      energy_level: parsedDuration >= 90 ? 'high' : parsedDuration >= 45 ? 'medium' : 'low',
       is_recurring: false,
       recurrence_rule: null,
       reminder_at: null,
@@ -146,25 +174,27 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
     addXP(50, 'Smart NLP Quick Capture used', 'plan_created', newTaskId);
 
     // 3. Trigger celebration
-    triggerNotification('PROCESADO POR IA', `"${parsedPreview.title}" agregado a tu agenda. (+50 XP)`, 'success');
+    triggerNotification('PROCESADO POR IA', `"${parsedTitle.trim()}" agregado a tu agenda. (+50 XP)`, 'success');
 
-    setInput('');
-    onClose();
+    handleClose();
   };
 
   const handleSuggestionClick = (text: string) => {
+    setUserOverrides({});
     setInput(text);
   };
 
+  const showPreview = input.trim().length > 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0d1117] shadow-2xl p-6 relative overflow-hidden">
+      <div className="flex flex-col max-h-[90vh] w-full max-w-lg rounded-2xl border border-white/10 bg-[#0d1117] shadow-2xl p-6 relative overflow-hidden">
         
         {/* Glow */}
-        <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-[60px]" />
+        <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-[60px] pointer-events-none" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/5">
+        <div className="flex items-center justify-between pb-4 border-b border-white/5 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
               <Sparkles className="w-4 h-4 animate-pulse" />
@@ -175,15 +205,15 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
             </div>
           </div>
           <button 
-            onClick={onClose}
+            onClick={handleClose}
             className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-text-secondary hover:text-text-primary transition-all cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* NLP Text Area */}
-        <div className="mt-4 space-y-4">
+        {/* Scrollable Body */}
+        <div className="mt-4 space-y-4 flex-1 overflow-y-auto pr-1">
           <div className="relative">
             <textarea
               value={input}
@@ -210,19 +240,19 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleSuggestionClick('Entrenamiento funcional hoy a las 7:00 am de 45 minutos #salud')}
-                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer text-left"
               >
                 Gimnasio hoy
               </button>
               <button
                 onClick={() => handleSuggestionClick('Reunión quincenal mañana a las 10:00 am de 1 hora #trabajo')}
-                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer text-left"
               >
                 Reunión mañana
               </button>
               <button
                 onClick={() => handleSuggestionClick('Meditar de 15 minutos #personal')}
-                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 text-text-secondary px-2.5 py-1.5 rounded-lg transition-all cursor-pointer text-left"
               >
                 Bloque meditar
               </button>
@@ -230,38 +260,80 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
           </div>
 
           {/* Real-time NLP parsing engine preview panel */}
-          {parsedPreview && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3 text-left">
+          {showPreview && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4 text-left">
               <h4 className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 animate-pulse" />
-                <span>Vista Previa del Motor FlowNLP</span>
+                <span>Vista Previa del Motor FlowNLP (Editable)</span>
               </h4>
 
-              <div className="grid grid-cols-2 gap-3 text-[10px] leading-relaxed">
-                <div>
-                  <span className="text-text-secondary block">Título del Bloque:</span>
-                  <span className="font-semibold text-text-primary truncate block">{parsedPreview.title}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs leading-relaxed">
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] text-text-secondary block font-semibold mb-1">Título del Bloque</label>
+                  <input
+                    type="text"
+                    value={parsedTitle}
+                    onChange={(e) => handleFieldChange('title', e.target.value)}
+                    className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all"
+                  />
                 </div>
+
                 <div>
-                  <span className="text-text-secondary block">Fecha Prevista:</span>
-                  <span className="font-semibold text-text-primary flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-accent-blue" />
-                    <span>{parsedPreview.date}</span>
-                  </span>
+                  <label className="text-[10px] text-text-secondary block font-semibold mb-1">Fecha Prevista</label>
+                  <div className="relative flex items-center">
+                    <Calendar className="absolute left-2.5 w-3.5 h-3.5 text-accent-blue pointer-events-none" />
+                    <input
+                      type="date"
+                      value={parsedDate}
+                      onChange={(e) => handleFieldChange('date', e.target.value)}
+                      className="w-full rounded-lg bg-black/40 border border-white/10 pl-8 pr-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all cursor-pointer scheme-dark"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <span className="text-text-secondary block">Hora de Inicio:</span>
-                  <span className="font-semibold text-text-primary flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-accent-green" />
-                    <span>{parsedPreview.startTime}</span>
-                  </span>
+                  <label className="text-[10px] text-text-secondary block font-semibold mb-1">Hora de Inicio</label>
+                  <div className="relative flex items-center">
+                    <Clock className="absolute left-2.5 w-3.5 h-3.5 text-accent-green pointer-events-none" />
+                    <input
+                      type="time"
+                      value={parsedTime}
+                      onChange={(e) => handleFieldChange('time', e.target.value)}
+                      className="w-full rounded-lg bg-black/40 border border-white/10 pl-8 pr-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all cursor-pointer scheme-dark"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <span className="text-text-secondary block">Duración & Tag:</span>
-                  <span className="font-semibold text-text-primary flex items-center gap-1.5">
-                    <Tag className="w-3 h-3 text-accent-violet" />
-                    <span>{parsedPreview.duration} min ({parsedPreview.tag})</span>
-                  </span>
+                  <label className="text-[10px] text-text-secondary block font-semibold mb-1">Duración (minutos)</label>
+                  <div className="relative flex items-center">
+                    <Clock className="absolute left-2.5 w-3.5 h-3.5 text-accent-blue pointer-events-none" />
+                    <input
+                      type="number"
+                      min="5"
+                      max="1440"
+                      value={parsedDuration}
+                      onChange={(e) => handleFieldChange('duration', e.target.value)}
+                      className="w-full rounded-lg bg-black/40 border border-white/10 pl-8 pr-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-text-secondary block font-semibold mb-1">Categoría</label>
+                  <div className="relative flex items-center">
+                    <Tag className="absolute left-2.5 w-3.5 h-3.5 text-accent-violet pointer-events-none" />
+                    <select
+                      value={parsedTag}
+                      onChange={(e) => handleFieldChange('tag', e.target.value)}
+                      className="w-full rounded-lg bg-black/40 border border-white/10 pl-8 pr-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all cursor-pointer appearance-none"
+                    >
+                      <option value="trabajo">Trabajo</option>
+                      <option value="personal">Personal</option>
+                      <option value="salud">Salud</option>
+                      <option value="estudios">Estudios</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -274,7 +346,6 @@ export default function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
               </div>
             </div>
           )}
-
         </div>
 
       </div>

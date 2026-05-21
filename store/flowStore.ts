@@ -76,7 +76,7 @@ interface FlowState {
   deleteProject: (id: string) => void;
   
   // Habit Actions
-  addHabit: (habit: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  addHabit: (habit: Omit<Habit, 'id' | 'user_id' | 'is_active' | 'created_at' | 'updated_at'>) => void;
   toggleHabit: (habitId: string, date: string) => void;
   deleteHabit: (id: string) => void;
   updateHabit: (id: string, data: Partial<Habit>) => void;
@@ -125,6 +125,12 @@ const defaultProfile: Profile = {
   level: 3,
   created_at: new Date(Date.now() - 17 * 86400000).toISOString(),
   updated_at: new Date().toISOString(),
+  google_calendar_connected: false,
+  google_calendar_email: null,
+  google_calendar_target_list: null,
+  apple_calendar_connected: false,
+  sync_tasks_enabled: true,
+  sync_habits_enabled: false,
 };
 
 // Initial Projects Seed

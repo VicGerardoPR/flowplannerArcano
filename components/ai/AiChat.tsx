@@ -111,8 +111,7 @@ export default function AiChat() {
         active_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
         reminder_time: payload.reminder_time || '08:00',
         color: '#9B5CFF',
-        icon: 'Flame',
-        is_active: true
+        icon: 'Flame'
       });
       triggerNotification('HÁBITO REGISTRADO', `"${payload.title}" agregado con éxito`, 'success');
     } else {

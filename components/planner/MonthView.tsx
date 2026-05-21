@@ -2,14 +2,13 @@
 // Developed by Arcano Intelligence
 
 'use client';
-
 import React, { useState } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { 
   ChevronLeft, ChevronRight, Target, 
-  Award, Plus, TrendingUp
+  Award, Plus, TrendingUp, X, Trash2, Calendar, Clock, Zap, Check
 } from 'lucide-react';
-import { Task } from '../../types';
+import { Task, Priority, TaskCategory } from '../../types';
 import { toLocalDateStr } from '../../lib/dateUtils';
 
 export default function MonthView() {
@@ -19,6 +18,10 @@ export default function MonthView() {
   const updateGoal = useFlowStore((state) => state.updateGoal);
   const addGoal = useFlowStore((state) => state.addGoal);
   const triggerNotification = useFlowStore((state) => state.triggerNotification);
+  const addTask = useFlowStore((state) => state.addTask);
+  const deleteTask = useFlowStore((state) => state.deleteTask);
+  const completeTask = useFlowStore((state) => state.completeTask);
+  const uncompleteTask = useFlowStore((state) => state.uncompleteTask);
 
   // Month navigation (0 = May 2026)
   const [monthOffset, setMonthOffset] = useState(0);
@@ -26,6 +29,14 @@ export default function MonthView() {
   // New Goal Input
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [showGoalForm, setShowGoalForm] = useState(false);
+
+  // Day Planner Modal states
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState<Priority>('medium');
+  const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('trabajo');
+  const [newTaskDuration, setNewTaskDuration] = useState<number>(60);
+  const [newTaskTime, setNewTaskTime] = useState<string>('');
 
   // Base month anchor relative to today's local system date
   const todayDate = new Date();
@@ -151,6 +162,9 @@ export default function MonthView() {
           <p className="text-xs text-text-secondary mt-0.5">
             Planifica a largo plazo y mide tu constancia mensual.
           </p>
+          <p className="text-[10px] text-primary/80 font-medium mt-1 flex items-center gap-1">
+            <span>💡 Consejo Flow: Haz clic en cualquier día de la cuadrícula para ver o añadir tareas.</span>
+          </p>
         </div>
 
         {/* Month Navigation */}
@@ -239,11 +253,12 @@ export default function MonthView() {
               return (
                 <div
                   key={idx}
-                  className={`aspect-square rounded-xl border p-2 flex flex-col justify-between transition-all ${
+                  onClick={() => setSelectedDate(day.dateStr)}
+                  className={`aspect-square rounded-xl border p-2 flex flex-col justify-between transition-all cursor-pointer hover:border-primary/50 hover:bg-white/5 ${
                     isToday 
-                      ? 'border-primary bg-primary/5' 
+                      ? 'border-primary bg-primary/5 shadow-md shadow-primary/5' 
                       : isCompleted
-                        ? 'border-primary/20 bg-primary/5'
+                        ? 'border-primary/20 bg-primary/5 shadow-md shadow-primary/5'
                         : 'border-white/5 bg-black/20 hover:border-white/10'
                   }`}
                 >
@@ -344,17 +359,235 @@ export default function MonthView() {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-text-secondary">
-            <span>Objetivos Completados:</span>
-            <span className="font-extrabold text-primary flex items-center gap-1">
-              <Award className="w-3.5 h-3.5" />
-              <span>{goals.filter(g => g.status === 'completed').length} logradas</span>
-            </span>
-          </div>
-
         </div>
 
       </div>
+
+      {/* Day Planner Modal */}
+      {selectedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0d1117]/95 shadow-2xl p-6 relative overflow-hidden flex flex-col max-h-[90vh] text-left">
+            
+            {/* Ambient Glow */}
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-[60px]" />
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-accent-violet/10 rounded-full blur-[60px]" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/5 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary">
+                    Plan de Día: {(() => {
+                      const [y, m, d] = selectedDate.split('-').map(Number);
+                      const dateObj = new Date(y, m - 1, d);
+                      return dateObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                    })()}
+                  </h3>
+                  <p className="text-[10px] text-text-secondary">Gestiona o añade tareas para este día.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setSelectedDate(null);
+                  setNewTaskTitle('');
+                }}
+                className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-text-secondary hover:text-text-primary transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-5 pr-1">
+              
+              {/* Task list for selected date */}
+              <div className="space-y-2">
+                <h4 className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Tareas Programadas</h4>
+                {(() => {
+                  const dayTasks = tasks.filter(t => t.due_date === selectedDate && t.status !== 'archived');
+                  if (dayTasks.length === 0) {
+                    return (
+                      <div className="text-center py-6 bg-black/20 rounded-xl border border-white/5">
+                        <p className="text-xs text-text-secondary italic">No hay tareas programadas para este día.</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {dayTasks.map((task) => (
+                        <div 
+                          key={task.id} 
+                          className="flex items-center justify-between p-3 bg-black/30 rounded-xl border border-white/5 hover:border-white/10 transition-all"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <button
+                              onClick={() => {
+                                if (task.status === 'completed') {
+                                  uncompleteTask(task.id);
+                                } else {
+                                  completeTask(task.id);
+                                }
+                              }}
+                              className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                                task.status === 'completed' 
+                                  ? 'bg-primary border-primary text-black' 
+                                  : 'border-white/20 hover:border-primary/50'
+                              }`}
+                            >
+                              {task.status === 'completed' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </button>
+                            <span className={`text-xs font-medium text-text-primary truncate ${task.status === 'completed' ? 'line-through opacity-50' : ''}`}>
+                              {task.title}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                              task.priority === 'high' ? 'bg-danger/10 text-danger border border-danger/20' :
+                              task.priority === 'medium' ? 'bg-warning/10 text-warning border border-warning/20' :
+                              'bg-accent-blue/10 text-accent-blue border border-accent-blue/20'
+                            }`}>
+                              {task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja'}
+                            </span>
+                            <button
+                              onClick={() => deleteTask(task.id)}
+                              className="p-1.5 rounded hover:bg-danger/20 text-text-secondary hover:text-danger transition-all cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Add task form for selected date */}
+              <div className="border-t border-white/5 pt-4 space-y-4">
+                <h4 className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5 text-primary" />
+                  <span>Añadir Tarea para este Día</span>
+                </h4>
+
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newTaskTitle.trim()) return;
+                    
+                    addTask({
+                      title: newTaskTitle.trim(),
+                      description: 'Tarea programada desde calendario mensual',
+                      status: 'pending',
+                      priority: newTaskPriority,
+                      category: newTaskCategory,
+                      project_id: null,
+                      due_date: selectedDate,
+                      due_time: newTaskTime || null,
+                      duration_minutes: newTaskDuration,
+                      energy_level: newTaskPriority,
+                      is_recurring: false,
+                      recurrence_rule: null,
+                      reminder_at: null,
+                      completed_at: null
+                    });
+
+                    triggerNotification(
+                      'TAREA PROGRAMADA',
+                      `"${newTaskTitle.trim()}" agregada con éxito`,
+                      'success'
+                    );
+
+                    setNewTaskTitle('');
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      required
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      placeholder="¿Qué planificas para este día?"
+                      className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 text-xs text-text-primary focus:border-primary/50 focus:outline-none transition-all placeholder:text-text-secondary/30"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[9px] font-bold text-text-secondary uppercase">Prioridad</label>
+                      <select
+                        value={newTaskPriority}
+                        onChange={(e) => setNewTaskPriority(e.target.value as Priority)}
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none"
+                      >
+                        <option value="low">Baja (Mínima Energía)</option>
+                        <option value="medium">Media (Energía Normal)</option>
+                        <option value="high">Alta (Enfoque Total)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[9px] font-bold text-text-secondary uppercase">Categoría</label>
+                      <select
+                        value={newTaskCategory}
+                        onChange={(e) => setNewTaskCategory(e.target.value as TaskCategory)}
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none"
+                      >
+                        <option value="trabajo">Trabajo</option>
+                        <option value="personal">Personal</option>
+                        <option value="salud">Salud</option>
+                        <option value="estudio">Estudios</option>
+                        <option value="proyecto">Proyecto</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[9px] font-bold text-text-secondary uppercase">Duración</label>
+                      <select
+                        value={newTaskDuration}
+                        onChange={(e) => setNewTaskDuration(Number(e.target.value))}
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none"
+                      >
+                        <option value={15}>15 minutos</option>
+                        <option value={30}>30 minutos</option>
+                        <option value={60}>1 hora</option>
+                        <option value={90}>1.5 horas</option>
+                        <option value={120}>2 horas</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[9px] font-bold text-text-secondary uppercase">Hora (Opcional)</label>
+                      <input
+                        type="time"
+                        value={newTaskTime}
+                        onChange={(e) => setNewTaskTime(e.target.value)}
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-text-primary focus:border-primary/50 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-primary hover:bg-primary/95 text-black py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/10 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Añadir Tarea</span>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
